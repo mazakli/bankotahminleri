@@ -39,7 +39,7 @@ app.get('/api/semrush/organic', async function(req, res) {
     return res.status(400).json({ error: 'domain gerekli' });
   }
 
-  var apiKey = process.env.SEMRUSH_API_KEY;
+var apiKey = process.env.SEMRUSH_API_KEY || '4f80607c2028e05c12764e36ac090e6c';
   if (!apiKey) {
     return res.status(500).json({ error: 'API key eksik' });
   }
