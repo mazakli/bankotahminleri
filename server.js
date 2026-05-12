@@ -146,6 +146,29 @@ app.get('/health', function(req, res) {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+app.get('/api/test-nosyapi', async function(req, res) {
+  var apiKey = process.env.NOSYAPI_KEY;
+  if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
+
+  var il    = req.query.il    || 'İstanbul';
+  var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
+
+  var apiUrl = 'https://www.nosyapi.com/apidoc/nobetci-eczane'
+    + '?apikey=' + encodeURIComponent(apiKey)
+    + '&il=' + encodeURIComponent(il)
+    + '&tarih=' + encodeURIComponent(tarih);
+
+  try {
+    var r = await fetch(apiUrl);
+    var text = await r.text();
+    var parsed = null;
+    try { parsed = JSON.parse(text); } catch(e) {}
+    res.json({ status: r.status, url: apiUrl.replace(apiKey, '***'), raw: text.slice(0, 1000), parsed: parsed });
+  } catch(err) {
+    res.json({ error: err.message });
+  }
+});
+
 app.get('/debug-env', function(req, res) {
   res.json({
     NOSYAPI_KEY: process.env.NOSYAPI_KEY ? 'VAR (' + process.env.NOSYAPI_KEY.length + ' karakter)' : 'YOK',
