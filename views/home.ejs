@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="robots" content="index, follow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-red sticky-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="fa-solid fa-pills me-2"></i>Nöbetçi Eczane
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-map-location-dot me-1"></i>İller
+          </a>
+          <div class="dropdown-menu dropdown-menu-end province-dropdown">
+            <div class="row g-0 p-2">
+              <%
+                var alpha = {};
+                iller.forEach(function(il){
+                  var letter = il.name[0].toUpperCase();
+                  if(!alpha[letter]) alpha[letter]=[];
+                  alpha[letter].push(il);
+                });
+              %>
+              <% Object.keys(alpha).sort().forEach(function(letter){ %>
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="dropdown-header fw-bold text-danger small"><%= letter %></div>
+                <% alpha[letter].forEach(function(il){ %>
+                <a class="dropdown-item py-0 small" href="/nobetci-<%= il.slug %>"><%= il.name %></a>
+                <% }); %>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<section class="hero-section py-5 text-white text-center">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h1 class="display-4 fw-bold mb-3">
+          <i class="fa-solid fa-pills me-3"></i>Türkiye Nöbetçi Eczane Rehberi
+        </h1>
+        <p class="lead mb-4">81 ilde, tüm ilçelerde nöbetçi eczaneleri anında bulun</p>
+        <div class="input-group input-group-lg search-box mx-auto" style="max-width:500px;position:relative">
+          <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-danger"></i></span>
+          <input type="text" id="citySearch" class="form-control border-0" placeholder="İl veya ilçe arayın...">
+          <button class="btn btn-warning fw-bold" onclick="doSearch()">Ara</button>
+        </div>
+        <div id="searchResults" class="mt-1" style="position:relative;max-width:500px;margin:0 auto;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-4 bg-light border-bottom">
+  <div class="container">
+    <h2 class="h5 fw-bold mb-3 text-danger"><i class="fa-solid fa-star me-2"></i>Büyükşehirler</h2>
+    <div class="row g-2">
+      <% var majorSlugs = ['istanbul','ankara','izmir','bursa','antalya','adana','konya','gaziantep','mersin','kayseri','diyarbakir','samsun','trabzon','eskisehir','kocaeli','hatay','manisa','sakarya']; %>
+      <% majorSlugs.forEach(function(slug){ var il = iller.find(function(i){ return i.slug===slug; }); if(il){ %>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="/nobetci-<%= il.slug %>" class="city-card d-block text-center p-3 rounded text-decoration-none">
+          <i class="fa-solid fa-location-dot text-danger mb-1 d-block"></i>
+          <span class="fw-semibold small"><%= il.name %></span>
+        </a>
+      </div>
+      <% } }); %>
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <h2 class="h4 fw-bold mb-4 text-danger">
+      <i class="fa-solid fa-list me-2"></i>Tüm İller (A-Z)
+    </h2>
+    <div class="row g-2">
+      <% iller.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');}).forEach(function(il){ %>
+      <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+        <a href="/nobetci-<%= il.slug %>" class="province-card d-flex align-items-center gap-2 p-2 rounded text-decoration-none">
+          <span class="plate-badge"><%= il.plate %></span>
+          <span class="fw-medium"><%= il.name %></span>
+        </a>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-md-6">
+        <h2 class="h4 fw-bold text-danger mb-3">
+          <i class="fa-solid fa-circle-info me-2"></i>Nöbetçi Eczane Nasıl Bulunur?
+        </h2>
+        <ul class="list-unstyled info-list">
+          <li><i class="fa-solid fa-check-circle text-success me-2"></i>Yukarıdan ilinizi seçin</li>
+          <li><i class="fa-solid fa-check-circle text-success me-2"></i>İlçenizi seçerek daha dar arama yapın</li>
+          <li><i class="fa-solid fa-check-circle text-success me-2"></i>Dün, bugün veya yarın sekmesiyle tarih seçin</li>
+          <li><i class="fa-solid fa-check-circle text-success me-2"></i>Yol tarifi butonuyla haritayı açın</li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <div class="info-card p-4 rounded-3">
+          <h3 class="h5 fw-bold mb-2"><i class="fa-solid fa-clock-rotate-left me-2 text-warning"></i>Nöbet Saatleri</h3>
+          <p class="text-muted small mb-0">Nöbetçi eczaneler genellikle saat <strong>09:00 – 09:00</strong> (24 saat) hizmet verir. Tatil ve hafta sonu nöbetleri farklılık gösterebilir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer-dark mt-0 py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <h5 class="text-white fw-bold mb-3">
+          <i class="fa-solid fa-pills me-2 text-danger"></i>Nöbetçi Eczane
+        </h5>
+        <p class="text-muted small">Türkiye'nin 81 ilindeki nöbetçi eczanelerini kolayca bulun.</p>
+      </div>
+      <div class="col-md-8">
+        <h6 class="text-muted text-uppercase small fw-bold mb-3">Tüm İller (A-Z)</h6>
+        <div class="d-flex flex-wrap gap-1">
+          <% iller.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');}).forEach(function(il){ %>
+          <a href="/nobetci-<%= il.slug %>" class="text-muted small text-decoration-none footer-il-link"><%= il.name %></a>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <hr class="border-secondary mt-4">
+    <div class="text-center text-muted small">
+      <p class="mb-0">&copy; <%= new Date().getFullYear() %> Nöbetçi Eczane Rehberi &mdash; Tüm hakları saklıdır.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="modal fade" id="mapsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-red text-white">
+        <h5 class="modal-title"><i class="fa-solid fa-map-location-dot me-2"></i><span id="modalPharmacyName">Yol Tarifi</span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="mapsSpinner" class="text-center py-5"><div class="spinner-border text-danger" role="status"></div></div>
+        <iframe id="mapsIframe" src="" width="100%" height="420" style="border:0;display:none;" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="modal-footer">
+        <a id="mapsExternalLink" href="#" target="_blank" rel="noopener" class="btn btn-danger btn-sm">
+          <i class="fa-solid fa-diamond-turn-right me-1"></i>Google Maps'te Aç
+        </a>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window._illerData = <%- JSON.stringify(iller) %>;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
