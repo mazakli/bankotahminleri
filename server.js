@@ -42,16 +42,12 @@ var demoPharmacies = [
 
 function nosyFetch(apiKey, il, ilce, tarih) {
   var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
-    + '?il=' + encodeURIComponent(il);
+    + '?apikey=' + encodeURIComponent(apiKey)
+    + '&il=' + encodeURIComponent(il);
   if (ilce) apiUrl += '&ilce=' + encodeURIComponent(ilce);
   apiUrl += '&tarih=' + encodeURIComponent(tarih);
-
   return fetch(apiUrl, {
-    headers: {
-      'Authorization': 'Bearer ' + apiKey,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
+    headers: { 'Accept': 'application/json' }
   });
 }
 
@@ -64,7 +60,7 @@ app.get('/api/eczaneler', async function(req, res) {
     return res.status(400).json({ error: 'il ve tarih gerekli' });
   }
 
-  var apiKey = process.env.NOSYAPI_KEY;
+  var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) {
     return res.json({ pharmacies: demoPharmacies, demo: true });
   }
@@ -158,42 +154,41 @@ app.get('/health', function(req, res) {
 });
 
 app.get('/api/test-nosyapi', async function(req, res) {
-  var apiKey = process.env.NOSYAPI_KEY;
+  var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
 
-  var il    = req.query.il    || 'İstanbul';
+  var il    = (req.query.il || 'istanbul').trim();
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
 
-  var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
-    + '?il=' + encodeURIComponent(il)
-    + '&tarih=' + encodeURIComponent(tarih);
+  var base = 'https://www.nosyapi.com/api/nobetci-eczane';
+  var urlWithKey   = base + '?apikey=' + encodeURIComponent(apiKey) + '&il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
+  var urlWithoutKey = base + '?il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
 
-  try {
-    var r = await fetch(apiUrl, {
-      headers: {
-        'Authorization': 'Bearer ' + apiKey,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    });
-    var text = await r.text();
-    var parsed = null;
-    try { parsed = JSON.parse(text); } catch(e) {}
-    var firstRow = null;
-    if (parsed) {
-      var rows = parsed.data || parsed.payload || parsed.result || parsed;
-      if (Array.isArray(rows) && rows.length > 0) firstRow = rows[0];
+  async function tryFetch(url, headers) {
+    try {
+      var r = await fetch(url, { headers: headers || { 'Accept': 'application/json' } });
+      var text = await r.text();
+      var parsed = null;
+      try { parsed = JSON.parse(text); } catch(e) {}
+      return { status: r.status, isHtml: text.trim().startsWith('<'), parsed: parsed, raw: text.slice(0, 200) };
+    } catch(e) {
+      return { error: e.message };
     }
-    var isHtml = text.trim().startsWith('<');
-    res.json({ status: r.status, isHtml: isHtml, url: apiUrl, firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 300) });
-  } catch(err) {
-    res.json({ error: err.message });
   }
+
+  var results = {};
+  results.keyLength = apiKey.length;
+  results.keyPreview = apiKey.slice(0, 6) + '...' + apiKey.slice(-4);
+  results.method1_queryParam = await tryFetch(urlWithKey);
+  results.method2_bearer = await tryFetch(urlWithoutKey, { 'Authorization': 'Bearer ' + apiKey, 'Accept': 'application/json' });
+
+  res.json(results);
 });
 
 app.get('/debug-env', function(req, res) {
+  var key = (process.env.NOSYAPI_KEY || '').trim();
   res.json({
-    NOSYAPI_KEY: process.env.NOSYAPI_KEY ? 'VAR (' + process.env.NOSYAPI_KEY.length + ' karakter)' : 'YOK',
+    NOSYAPI_KEY: key ? 'VAR (' + key.length + ' karakter, ilk6: ' + key.slice(0,6) + ')' : 'YOK',
     PORT: PORT
   });
 });
