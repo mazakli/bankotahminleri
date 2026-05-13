@@ -11,7 +11,6 @@
   function loadPharmacies(citySlug, districtSlug, date) {
     if (!citySlug || !date) return;
     currentDate = date;
-
     show('loadingSpinner');
     hide('pharmacyTableWrap');
     hide('noDataMsg');
@@ -21,10 +20,7 @@
     if (districtSlug) url += '&ilce=' + encodeURIComponent(districtSlug);
 
     fetch(url)
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (data) {
         hide('loadingSpinner');
         allPharmacies = data.pharmacies || [];
@@ -34,10 +30,7 @@
         var badge = $('pharmacyCount');
         if (badge) badge.textContent = allPharmacies.length + ' nöbetçi eczane';
       })
-      .catch(function () {
-        hide('loadingSpinner');
-        show('errorMsg');
-      });
+      .catch(function () { hide('loadingSpinner'); show('errorMsg'); });
   }
 
   function renderTable(pharmacies) {
@@ -46,25 +39,34 @@
     tbody.innerHTML = '';
     pharmacies.forEach(function (p, idx) {
       var tr = document.createElement('tr');
+
+      var addressHtml = '';
+      if (p.dist) addressHtml += '<div class="text-muted small mb-1"><i class="fa-solid fa-map-pin me-1"></i>' + esc(p.dist) + '</div>';
+      addressHtml += '<div>' + esc(p.address || '—') + '</div>';
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-directions';
+      btn.innerHTML = '<i class="fa-solid fa-diamond-turn-right me-1"></i>Yol Tarifi';
+      btn.dataset.name    = p.name    || '';
+      btn.dataset.address = p.address || '';
+      btn.dataset.lat     = p.lat     || '';
+      btn.dataset.lng     = p.lng     || '';
+      btn.addEventListener('click', function () {
+        showDirections(this.dataset.name, this.dataset.address, this.dataset.lat, this.dataset.lng);
+      });
+
       tr.innerHTML =
         '<td class="text-muted small">' + (idx + 1) + '</td>' +
-        '<td><div class="pharmacy-name">' + esc(p.name) + '</div>' +
-          (p.dist ? '<div class="text-muted small"><i class="fa-solid fa-map-pin me-1"></i>' + esc(p.dist) + '</div>' : '') +
-        '</td>' +
-        '<td><div class="pharmacy-address">' + esc(p.address || '—') + '</div></td>' +
+        '<td><div class="pharmacy-name">' + esc(p.name) + '</div></td>' +
+        '<td class="pharmacy-address">' + addressHtml + '</td>' +
         '<td class="pharmacy-phone">' +
-          (p.phone ? '<a href="tel:' + esc(p.phone.replace(/\s/g,'')) + '" onclick="trackPhone(this)"><i class="fa-solid fa-phone me-1"></i>' + esc(p.phone) + '</a>' : '<span class="text-muted">—</span>') +
+          (p.phone
+            ? '<a href="tel:' + esc(p.phone.replace(/\s/g, '')) + '"><i class="fa-solid fa-phone me-1"></i>' + esc(p.phone) + '</a>'
+            : '<span class="text-muted">—</span>') +
         '</td>' +
-        '<td>' +
-          '<button class="btn-directions" onclick="showDirections(' +
-            JSON.stringify(p.name) + ',' +
-            JSON.stringify(p.address || '') + ',' +
-            JSON.stringify(p.lat || '') + ',' +
-            JSON.stringify(p.lng || '') +
-          ')">' +
-            '<i class="fa-solid fa-diamond-turn-right me-1"></i>Yol Tarifi' +
-          '</button>' +
-        '</td>';
+        '<td></td>';
+
+      tr.lastElementChild.appendChild(btn);
       tbody.appendChild(tr);
     });
   }
@@ -80,9 +82,8 @@
       tab.addEventListener('click', function () {
         tabs.forEach(function (t) { t.classList.remove('active'); });
         tab.classList.add('active');
-        var date = tab.getAttribute('data-date');
         if (window.PAGE_ILSLUG) {
-          loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', date);
+          loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', tab.getAttribute('data-date'));
         }
       });
     });
@@ -93,25 +94,35 @@
     var iframe  = document.getElementById('mapsIframe');
     var spinner = document.getElementById('mapsSpinner');
     var extLink = document.getElementById('mapsExternalLink');
+
     if (nameEl) nameEl.textContent = name;
     if (iframe)  iframe.style.display = 'none';
     if (spinner) spinner.style.display = '';
-    var query = address || name;
-    var mapSrc, mapsUrl;
+
+    var mapsUrl, mapSrc;
     if (lat && lng) {
-      mapSrc  = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&output=embed&z=16';
-      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(lat + ',' + lng);
+      mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng) + '&output=embed&z=16';
     } else {
-      mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(query) + '&output=embed&z=16';
-      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(query);
+      var q = (address || name);
+      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q);
+      mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed&z=16';
     }
+
     if (extLink) extLink.href = mapsUrl;
     if (iframe) {
-      iframe.onload = function () { if (spinner) spinner.style.display = 'none'; iframe.style.display = ''; };
+      iframe.onload = function () {
+        if (spinner) spinner.style.display = 'none';
+        iframe.style.display = '';
+      };
       iframe.src = mapSrc;
     }
-    var modal = new bootstrap.Modal(document.getElementById('mapsModal'));
-    modal.show();
+
+    var modalEl = document.getElementById('mapsModal');
+    if (modalEl) {
+      var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    }
   };
 
   function initTableSearch() {
@@ -121,9 +132,9 @@
       var q = input.value.toLowerCase().trim();
       if (!q) { renderTable(allPharmacies); return; }
       var filtered = allPharmacies.filter(function (p) {
-        return (p.name || '').toLowerCase().includes(q) ||
+        return (p.name    || '').toLowerCase().includes(q) ||
                (p.address || '').toLowerCase().includes(q) ||
-               (p.dist || '').toLowerCase().includes(q);
+               (p.dist    || '').toLowerCase().includes(q);
       });
       renderTable(filtered);
       var badge = $('pharmacyCount');
@@ -132,11 +143,7 @@
   }
 
   window.trackPhone = function () {};
-
-  window.doSearch = function () {
-    var input = document.getElementById('citySearch');
-    if (input) triggerSearch(input.value);
-  };
+  window.doSearch   = function () { var i = document.getElementById('citySearch'); if (i) triggerSearch(i.value); };
 
   function initHomeSearch() {
     var input = document.getElementById('citySearch');
@@ -157,10 +164,7 @@
     if (!results) return;
     var q = val.trim().toLowerCase();
     if (q.length < 2) { results.innerHTML = ''; return; }
-    if (!window._illerData) {
-      results.innerHTML = '<div class="p-3 text-muted small">Yükleniyor...</div>';
-      return;
-    }
+    if (!window._illerData) { results.innerHTML = '<div class="p-3 text-muted small">Yükleniyor...</div>'; return; }
     var matches = [];
     window._illerData.forEach(function (il) {
       if (il.name.toLowerCase().includes(q) || il.slug.includes(q))
@@ -173,10 +177,9 @@
     matches = matches.slice(0, 12);
     if (matches.length === 0) { results.innerHTML = '<div class="p-3 text-muted small">Sonuç bulunamadı</div>'; return; }
     results.innerHTML = matches.map(function (m) {
-      var icon = m.type === 'il'
-        ? '<i class="fa-solid fa-city me-2 text-danger"></i>'
-        : '<i class="fa-solid fa-map-pin me-2 text-secondary"></i>';
-      return '<a href="' + m.url + '">' + icon + m.label + '</a>';
+      return '<a href="' + m.url + '">' +
+        (m.type === 'il' ? '<i class="fa-solid fa-city me-2 text-danger"></i>' : '<i class="fa-solid fa-map-pin me-2 text-secondary"></i>') +
+        m.label + '</a>';
     }).join('');
   }
 
