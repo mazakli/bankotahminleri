@@ -155,6 +155,22 @@
   var active = false;
   var _rec = null;
 
+  // Eczaneyle ilgili gürültü sözcüklerini ayıklar, konum adını döner
+  function parseVoiceQuery(text) {
+    var stop = [
+      'nöbetçi','nobetci','eczane','eczaneler','eczanesi','eczaneye',
+      'yakın','yakında','yakin','yakinda','en','yakın',
+      'bul','ara','bana','göster','goster','gösterir','gosterir',
+      'nerede','var','mı','mi','mu','mü','hangi',
+      'bugün','bugun','gece','açık','acik','olan',
+      'için','icin','de','da','bir','ile','ve','veya',
+      'istiyorum','lütfen','lutfen','bulmak','lazım','lazim'
+    ];
+    var words = text.toLowerCase().split(/\s+/);
+    var filtered = words.filter(function (w) { return w && stop.indexOf(w) === -1; });
+    return filtered.join(' ').trim() || text.trim();
+  }
+
   function resetBtn(title) {
     active = false;
     micBtn.classList.remove('mic-active');
@@ -175,8 +191,9 @@
     };
     rec.onresult = function (e) {
       var text = e.results[0][0].transcript;
+      var parsed = parseVoiceQuery(text);
       var inp = document.getElementById('citySearch');
-      inp.value = text;
+      inp.value = parsed;
       inp.dispatchEvent(new Event('input', { bubbles: true }));
       setTimeout(function () {
         var first = document.querySelector('#searchResults a');
