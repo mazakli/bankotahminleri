@@ -61,7 +61,7 @@ app.get('/api/eczaneler', async function(req, res) {
   }
 
   try {
-    var apiUrl = 'https://www.nosyapi.com/apidoc/service/nobetci-eczane'
+    var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
       + '?apikey=' + encodeURIComponent(apiKey)
       + '&il=' + encodeURIComponent(il);
     if (ilce) apiUrl += '&ilce=' + encodeURIComponent(ilce);
@@ -155,7 +155,7 @@ app.get('/api/test-nosyapi', async function(req, res) {
   var il    = req.query.il    || 'İstanbul';
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
 
-  var apiUrl = 'https://www.nosyapi.com/apidoc/service/nobetci-eczane'
+  var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
     + '?apikey=' + encodeURIComponent(apiKey)
     + '&il=' + encodeURIComponent(il)
     + '&tarih=' + encodeURIComponent(tarih);
