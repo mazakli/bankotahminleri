@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.724eczane.com/eczane-ekle">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= description %>">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="724eczane.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<%- include('partials/navbar') %>
+
+<main class="flex-grow-1">
+
+<section class="hero-section py-4 text-white text-center">
+  <div class="container">
+    <h1 class="h2 fw-bold mb-2"><i class="fa-solid fa-plus-circle me-2"></i>Eczanenizi Ekleyin</h1>
+    <p class="lead mb-0">Nöbetçi eczane rehberimize eczanenizi ücretsiz ekleyin.</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <div class="alert alert-info d-flex gap-2 align-items-start mb-4">
+          <i class="fa-solid fa-circle-info mt-1 flex-shrink-0"></i>
+          <div class="small">Başvurunuz incelendikten sonra sisteme eklenecektir. <strong>Enlem ve boylam</strong> bilgileri harita özelliği için önerilir, ancak zorunlu değildir.</div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-danger text-white fw-bold">
+            <i class="fa-solid fa-prescription-bottle me-2"></i>Eczane Bilgileri
+          </div>
+          <div class="card-body p-4">
+            <div id="eczaneFormWrap">
+              <form id="eczaneForm" novalidate>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Eczane Adı <span class="text-danger">*</span></label>
+                  <input type="text" id="fName" class="form-control" placeholder="örn. MERKEZ ECZANESİ" required>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold">İl <span class="text-danger">*</span></label>
+                    <select id="fIl" class="form-select" required>
+                      <option value="">— İl seçin —</option>
+                      <% iller.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');}).forEach(function(il){ %>
+                      <option value="<%= il.slug %>" data-name="<%= il.name %>" data-districts='<%- JSON.stringify(il.districts) %>'><%= il.name %></option>
+                      <% }); %>
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold">İlçe <span class="text-danger">*</span></label>
+                    <select id="fIlce" class="form-select" disabled required>
+                      <option value="">— Önce il seçin —</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Adres <span class="text-danger">*</span></label>
+                  <textarea id="fAddress" class="form-control" rows="2" placeholder="Mahalle, cadde, sokak ve kapı numarası" required></textarea>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold">Telefon <span class="text-danger">*</span></label>
+                    <input type="tel" id="fPhone" class="form-control" placeholder="0212 555 00 00" required>
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold">E-posta</label>
+                    <input type="email" id="fEmail" class="form-control" placeholder="eczane@ornek.com">
+                  </div>
+                </div>
+
+                <hr class="my-3">
+                <p class="small text-muted mb-3"><i class="fa-solid fa-map-pin me-1 text-danger"></i>Harita özelliği için enlem ve boylam girin <span class="text-muted">(isteğe bağlı)</span></p>
+
+                <div class="row g-3 mb-4">
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold small">Enlem (Latitude)</label>
+                    <input type="number" id="fLat" class="form-control" placeholder="örn. 41.0082" step="any" min="-90" max="90">
+                  </div>
+                  <div class="col-sm-6">
+                    <label class="form-label fw-semibold small">Boylam (Longitude)</label>
+                    <input type="number" id="fLng" class="form-control" placeholder="örn. 28.9784" step="any" min="-180" max="180">
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <a href="#" id="getLocationBtn" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-location-crosshairs me-1"></i>Mevcut Konumumu Kullan
+                  </a>
+                </div>
+
+                <div id="fError" class="alert alert-danger d-none"></div>
+                <button type="submit" class="btn btn-danger px-4">
+                  <i class="fa-solid fa-paper-plane me-2"></i>Başvuruyu Gönder
+                </button>
+              </form>
+            </div>
+
+            <div id="eczaneSuccess" class="text-center py-5 d-none">
+              <i class="fa-solid fa-circle-check fa-3x text-success mb-3"></i>
+              <h4 class="fw-bold">Başvurunuz Alındı!</h4>
+              <p class="text-muted">Bilgileriniz incelendikten sonra sisteme eklenecektir. Teşekkür ederiz.</p>
+              <a href="/" class="btn btn-outline-danger btn-sm mt-2">
+                <i class="fa-solid fa-house me-1"></i>Ana Sayfaya Dön
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<%- include('partials/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+// İlçe dropdown
+var _ilMap = {};
+document.querySelectorAll('#fIl option[data-districts]').forEach(function(opt) {
+  _ilMap[opt.value] = { name: opt.dataset.name, districts: JSON.parse(opt.dataset.districts) };
+});
+document.getElementById('fIl').addEventListener('change', function() {
+  var ilceEl = document.getElementById('fIlce');
+  ilceEl.innerHTML = '<option value="">— İlçe seçin —</option>';
+  if (!this.value) { ilceEl.disabled = true; return; }
+  var data = _ilMap[this.value];
+  if (data) {
+    data.districts.slice().sort(function(a,b){ return a.name.localeCompare(b.name,'tr'); }).forEach(function(d) {
+      var o = document.createElement('option');
+      o.value = d.slug; o.textContent = d.name;
+      ilceEl.appendChild(o);
+    });
+  }
+  ilceEl.disabled = false;
+});
+
+// Konum al
+document.getElementById('getLocationBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (!navigator.geolocation) return;
+  this.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Alınıyor...';
+  var btn = this;
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    document.getElementById('fLat').value = pos.coords.latitude.toFixed(6);
+    document.getElementById('fLng').value = pos.coords.longitude.toFixed(6);
+    btn.innerHTML = '<i class="fa-solid fa-check me-1 text-success"></i>Konum Alındı';
+  }, function() {
+    btn.innerHTML = '<i class="fa-solid fa-location-crosshairs me-1"></i>Mevcut Konumumu Kullan';
+  }, { timeout: 8000 });
+});
+
+// Form gönder
+document.getElementById('eczaneForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var name    = document.getElementById('fName').value.trim();
+  var il      = document.getElementById('fIl').value;
+  var ilName  = il ? _ilMap[il].name : '';
+  var ilceEl  = document.getElementById('fIlce');
+  var ilce    = ilceEl.value;
+  var ilceName = ilceEl.options[ilceEl.selectedIndex] ? ilceEl.options[ilceEl.selectedIndex].text : '';
+  var address = document.getElementById('fAddress').value.trim();
+  var phone   = document.getElementById('fPhone').value.trim();
+  var email   = document.getElementById('fEmail').value.trim();
+  var lat     = document.getElementById('fLat').value.trim();
+  var lng     = document.getElementById('fLng').value.trim();
+  var errEl   = document.getElementById('fError');
+  errEl.classList.add('d-none');
+
+  if (!name || !il || !ilce || !address || !phone) {
+    errEl.textContent = 'Lütfen zorunlu alanların tamamını doldurun.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+
+  fetch('/api/eczane-ekle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, il: ilName, ilSlug: il, ilce: ilceName, ilceSlug: ilce, address: address, phone: phone, email: email, lat: lat, lng: lng })
+  }).then(function(r) { return r.json(); }).then(function(result) {
+    if (result.success) {
+      document.getElementById('eczaneFormWrap').classList.add('d-none');
+      document.getElementById('eczaneSuccess').classList.remove('d-none');
+    }
+  }).catch(function() {
+    errEl.textContent = 'Gönderim sırasında hata oluştu. Lütfen tekrar deneyin.';
+    errEl.classList.remove('d-none');
+  });
+});
+</script>
+</body>
+</html>

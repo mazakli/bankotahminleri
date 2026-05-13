@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /debug-env
+Disallow: /health
+
+Sitemap: https://www.724eczane.com/sitemap.xml

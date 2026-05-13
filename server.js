@@ -11,7 +11,16 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// non-www → www (301 kalıcı yönlendirme, SEO için zorunlu)
+app.use(function (req, res, next) {
+  if (req.hostname === '724eczane.com') {
+    return res.redirect(301, 'https://www.724eczane.com' + req.originalUrl);
+  }
+  next();
+});
 
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
@@ -177,6 +186,41 @@ app.get('/api/test-city', async function (req, res) {
   }
 });
 
+// Eczane başvurusu kaydet (Railway loglarına düşer)
+app.post('/api/eczane-ekle', function (req, res) {
+  var d = req.body || {};
+  console.log('[eczane-ekle] Başvuru: ' + (d.name||'?') + ' / ' + (d.il||'?') + ' / ' + (d.ilce||'?') + ' / ' + (d.phone||'?'));
+  res.json({ success: true });
+});
+
+// Sitemap (SEO)
+app.get('/sitemap.xml', function (req, res) {
+  var iller = require('./data/iller');
+  var base  = 'https://www.724eczane.com';
+  var today = new Date().toISOString().split('T')[0];
+  var urls  = [
+    { loc: base + '/',                    priority: '1.0', freq: 'daily'   },
+    { loc: base + '/sitene-ekle',         priority: '0.6', freq: 'monthly' },
+    { loc: base + '/eczane-ekle',         priority: '0.6', freq: 'monthly' },
+    { loc: base + '/iletisim',            priority: '0.5', freq: 'monthly' },
+    { loc: base + '/gizlilik',            priority: '0.3', freq: 'yearly'  },
+    { loc: base + '/kullanim-kosullari',  priority: '0.3', freq: 'yearly'  },
+  ];
+  iller.forEach(function (il) {
+    urls.push({ loc: base + '/nobetci-' + il.slug, priority: '0.8', freq: 'daily' });
+    il.districts.forEach(function (d) {
+      urls.push({ loc: base + '/nobetci-' + il.slug + '-' + d.slug, priority: '0.7', freq: 'daily' });
+    });
+  });
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  urls.forEach(function (u) {
+    xml += '  <url><loc>' + u.loc + '</loc><changefreq>' + u.freq + '</changefreq><priority>' + u.priority + '</priority><lastmod>' + today + '</lastmod></url>\n';
+  });
+  xml += '</urlset>';
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.send(xml);
+});
+
 app.get('/nobetci-:slug', function (req, res, next) {
   var slug  = req.params.slug;
   var iller = require('./data/iller');
@@ -211,6 +255,11 @@ app.get('/widget', function (req, res) {
 app.get('/sitene-ekle', function (req, res) {
   var iller = require('./data/iller');
   res.render('sitene-ekle', { iller: iller, title: 'Sitenize Nöbetçi Eczane Ekleyin | 724eczane.com', description: 'Tek satır kod ile nöbetçi eczane listesini sitenize ücretsiz ekleyin. İl ve ilçe seçin, iframe kodunu kopyalayın.' });
+});
+
+app.get('/eczane-ekle', function (req, res) {
+  var iller = require('./data/iller');
+  res.render('eczane-ekle', { iller: iller, title: 'Eczanenizi Ekleyin | 724eczane.com', description: 'Nöbetçi eczane listemize eczanenizi ücretsiz ekleyin. Adres, telefon ve konum bilgilerinizi girin.' });
 });
 
 app.get('/iletisim', function (req, res) {
