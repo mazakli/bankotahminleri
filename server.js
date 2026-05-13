@@ -16,22 +16,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
 
-var allCache = { date: null, data: [], lastRefresh: null };
+var allCache = { date: null, data: [], lastRefresh: null, lastError: null };
 var cacheLoading = false;
 var cacheCallbacks = [];
 
-// Türkçe karakterleri ÖNCE değiştir, sonra toLowerCase — İ.toLowerCase() = 'i̇' (2 karakter) olur
 function toSlug(str) {
   return (str || '')
-    .replace(/İ/g, 'i')   // İ → i
-    .replace(/ı/g, 'i')   // ı → i
-    .replace(/[Şş]/g, 's')  // Ş ş → s
-    .replace(/[Ğğ]/g, 'g')  // Ğ ğ → g
-    .replace(/[Üü]/g, 'u')  // Ü ü → u
-    .replace(/[Öö]/g, 'o')  // Ö ö → o
-    .replace(/[Çç]/g, 'c')  // Ç ç → c
-    .toLowerCase()
-    .replace(/\s+/g, '-');
+    .replace(/İ/g, 'i').replace(/ı/g, 'i')
+    .replace(/[Şş]/g, 's').replace(/[Ğğ]/g, 'g')
+    .replace(/[Üü]/g, 'u').replace(/[Öö]/g, 'o')
+    .replace(/[Çç]/g, 'c')
+    .toLowerCase().replace(/\s+/g, '-');
 }
 
 function nosyHeaders(apiKey) {
@@ -63,16 +58,20 @@ async function fetchAllPharmacies(apiKey, date, force) {
   cacheLoading = true;
   try {
     var url = NOSY_BASE + 'pharmacies-on-duty/all?date=' + encodeURIComponent(date);
-    var r   = await fetch(url, { headers: nosyHeaders(apiKey) });
-    var json = await r.json();
+    console.log('[cache] istek:', url);
+    var r    = await fetch(url, { headers: nosyHeaders(apiKey) });
+    var text = await r.text();
+    console.log('[cache] HTTP', r.status, text.slice(0, 200));
+    var json = JSON.parse(text);
     var rows = (json && json.data) || [];
     var parsed = Array.isArray(rows) ? rows.map(parseRow) : [];
-    allCache = { date: date, data: parsed, lastRefresh: new Date().toISOString() };
-    console.log('[cache] ' + new Date().toLocaleTimeString('tr-TR') + ' — ' + date + ' — ' + parsed.length + ' eczane');
+    allCache = { date: date, data: parsed, lastRefresh: new Date().toISOString(), lastError: null };
+    console.log('[cache] ' + parsed.length + ' eczane kaydedildi');
     cacheCallbacks.forEach(function (cb) { cb(parsed); });
     return parsed;
   } catch (err) {
     console.error('[cache] hata:', err.message);
+    allCache.lastError = err.message;
     cacheCallbacks.forEach(function (cb) { cb(allCache.data); });
     return allCache.data;
   } finally {
@@ -82,25 +81,22 @@ async function fetchAllPharmacies(apiKey, date, force) {
 }
 
 function msUntilNextRefresh() {
-  var now  = new Date();
+  var now   = new Date();
   var trNow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-  var trHour = trNow.getUTCHours();
-  var trMin  = trNow.getUTCMinutes();
-  var trSec  = trNow.getUTCSeconds();
-  var trMs   = trNow.getUTCMilliseconds();
-  var minutesPassed = trHour * 60 + trMin;
+  var minutesPassed = trNow.getUTCHours() * 60 + trNow.getUTCMinutes();
   var nextHour = null;
   for (var i = 0; i < REFRESH_HOURS_TR.length; i++) {
     if (REFRESH_HOURS_TR[i] * 60 > minutesPassed) { nextHour = REFRESH_HOURS_TR[i]; break; }
   }
   if (nextHour === null) nextHour = REFRESH_HOURS_TR[0] + 24;
+  var trSec = trNow.getUTCSeconds();
+  var trMs  = trNow.getUTCMilliseconds();
   return (nextHour * 60 - minutesPassed) * 60 * 1000 - trSec * 1000 - trMs;
 }
 
 function scheduleNextRefresh(apiKey) {
   var ms = msUntilNextRefresh();
-  var nextTime = new Date(Date.now() + ms);
-  console.log('[cache] sonraki güncelleme: ' + nextTime.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }));
+  console.log('[cache] sonraki guncelleme: ' + new Date(Date.now() + ms).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }));
   setTimeout(function () {
     fetchAllPharmacies(apiKey, todayISO(), true).then(function () { scheduleNextRefresh(apiKey); });
   }, ms);
@@ -124,7 +120,7 @@ function getDateInfo() {
 var demoPharmacies = [
   { name:'MERKEZ ECZANESİ',  dist:'MERKEZ', address:'Atatürk Cad. No:15',            phone:'0312 555 11 22', lat:'', lng:'' },
   { name:'SAĞLIK ECZANESİ', dist:'MERKEZ', address:'Cumhuriyet Mah. 123 Sok. No:5', phone:'0312 555 33 44', lat:'', lng:'' },
-  { name:'GÜVEN ECZANESİ',  dist:'MERKEZ', address:'İstiklal Cad. No:42',          phone:'0312 555 55 66', lat:'', lng:'' },
+  { name:'GÜVEN ECZANESİ',  dist:'MERKEZ', address:'İstiklal Cad. No:42',       phone:'0312 555 55 66', lat:'', lng:'' },
   { name:'HAYAT ECZANESİ',  dist:'MERKEZ', address:'Yıldız Mah. Gül Sok. No:3', phone:'0312 555 77 88', lat:'', lng:'' }
 ];
 
@@ -132,12 +128,9 @@ app.get('/api/eczaneler', async function (req, res) {
   var citySlug = (req.query.il    || '').trim();
   var distSlug = (req.query.ilce  || '').trim();
   var date     = (req.query.tarih || '').trim();
-
   if (!citySlug || !date) return res.status(400).json({ error: 'il ve tarih gerekli' });
-
   var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) return res.json({ pharmacies: demoPharmacies, demo: true });
-
   try {
     var all = await fetchAllPharmacies(apiKey, date);
     var filtered = all.filter(function (p) {
@@ -151,12 +144,21 @@ app.get('/api/eczaneler', async function (req, res) {
   }
 });
 
-// Önbellekteki şehir slug'larını gösterir — eşleşme sorunlarını debug etmek için
+// Manuel yenileme
+app.get('/api/cache-refresh', async function (req, res) {
+  var apiKey = (process.env.NOSYAPI_KEY || '').trim();
+  if (!apiKey) return res.status(400).json({ error: 'API key yok' });
+  try {
+    var data = await fetchAllPharmacies(apiKey, todayISO(), true);
+    res.json({ ok: true, totalRows: data.length, lastRefresh: allCache.lastRefresh, lastError: allCache.lastError });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/cache-cities', function (req, res) {
   var counts = {};
-  allCache.data.forEach(function (p) {
-    counts[p.citySlug] = (counts[p.citySlug] || 0) + 1;
-  });
+  allCache.data.forEach(function (p) { counts[p.citySlug] = (counts[p.citySlug] || 0) + 1; });
   res.json({ cities: counts });
 });
 
@@ -165,6 +167,7 @@ app.get('/api/cache-status', function (req, res) {
   res.json({
     cacheDate:    allCache.date,
     lastRefresh:  allCache.lastRefresh,
+    lastError:    allCache.lastError,
     today:        todayISO(),
     totalRows:    allCache.data.length,
     isToday:      allCache.date === todayISO(),
@@ -224,7 +227,7 @@ app.listen(PORT, '0.0.0.0', function () {
     fetchAllPharmacies(apiKey, todayISO()).then(function () {
       scheduleNextRefresh(apiKey);
     }).catch(function (e) {
-      console.error('[cache] ön yükleme hatası:', e.message);
+      console.error('[cache] on yukleme hatasi:', e.message);
       scheduleNextRefresh(apiKey);
     });
   }
