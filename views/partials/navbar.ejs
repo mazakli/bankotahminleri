@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-red sticky-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">
+      <i class="fa-solid fa-pills me-2"></i>724eczane.com
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-map-location-dot me-1"></i>İller
+          </a>
+          <div class="dropdown-menu dropdown-menu-end province-dropdown">
+            <div class="row g-0 p-2">
+              <%
+                var _alpha = {};
+                iller.forEach(function(i){
+                  var letter = i.name[0].toUpperCase();
+                  if(!_alpha[letter]) _alpha[letter]=[];
+                  _alpha[letter].push(i);
+                });
+              %>
+              <% Object.keys(_alpha).sort().forEach(function(letter){ %>
+              <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="dropdown-header fw-bold text-danger small"><%= letter %></div>
+                <% _alpha[letter].forEach(function(prov){ %>
+                <a class="dropdown-item py-0 small" href="/nobetci-<%= prov.slug %>"><%= prov.name %></a>
+                <% }); %>
+              </div>
+              <% }); %>
+            </div>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/sitene-ekle">
+            <i class="fa-solid fa-code me-1"></i>Sitene Ekle
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/iletisim">
+            <i class="fa-solid fa-envelope me-1"></i>İletişim
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

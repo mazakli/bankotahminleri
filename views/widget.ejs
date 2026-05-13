@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= il.name %><%= ilce ? ' ' + ilce.name : '' %> Nöbetçi Eczaneleri - 724eczane.com</title>
+  <meta name="robots" content="noindex">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,sans-serif;font-size:13px;color:#222;background:#fff}
+    .w-header{background:#C8102E;color:#fff;padding:8px 12px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
+    .w-list{list-style:none}
+    .w-item{padding:8px 12px;border-bottom:1px solid #f0f0f0;display:flex;flex-direction:column;gap:2px}
+    .w-item:hover{background:#fff5f6}
+    .w-name{font-weight:600;color:#222}
+    .w-addr{color:#666;font-size:11px}
+    .w-phone a{color:#C8102E;text-decoration:none;font-size:12px;font-weight:500}
+    .w-empty{padding:20px;text-align:center;color:#888}
+    .w-footer{padding:6px 12px;text-align:right;border-top:1px solid #f0f0f0;background:#fafafa}
+    .w-footer a{color:#C8102E;text-decoration:none;font-size:10px}
+  </style>
+</head>
+<body>
+  <div class="w-header">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+    <%= il.name %><%= ilce ? ' / ' + ilce.name : '' %> &mdash; Bugün Nöbetçi Eczaneler
+  </div>
+  <div id="wContent"><div class="w-empty">Yükleniyor...</div></div>
+  <div class="w-footer"><a href="https://724eczane.com/nobetci-<%= il.slug %><%= ilce ? '-' + ilce.slug : '' %>" target="_blank">724eczane.com'da Aç &rarr;</a></div>
+
+  <script>
+    var IL   = '<%= il.slug %>';
+    var ILCE = '<%= ilce ? ilce.slug : "" %>';
+    var DATE = '<%= today.bugun.iso %>';
+    var url  = '/api/eczaneler?il=' + IL + '&tarih=' + DATE + (ILCE ? '&ilce=' + ILCE : '');
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      var list = data.pharmacies || [];
+      if(!list.length){
+        document.getElementById('wContent').innerHTML = '<div class="w-empty">Bugün nöbetçi eczane bulunamadı.</div>';
+        return;
+      }
+      var html = '<ul class="w-list">';
+      list.forEach(function(p){
+        html += '<li class="w-item">';
+        html += '<span class="w-name">' + esc(p.name) + '</span>';
+        if(p.address) html += '<span class="w-addr">' + esc(p.address) + '</span>';
+        if(p.phone) html += '<span class="w-phone"><a href="tel:' + esc(p.phone.replace(/\s/g,'')) + '">&#9990; ' + esc(p.phone) + '</a></span>';
+        html += '</li>';
+      });
+      html += '</ul>';
+      document.getElementById('wContent').innerHTML = html;
+    }).catch(function(){
+      document.getElementById('wContent').innerHTML = '<div class="w-empty">Veri yüklenemedi.</div>';
+    });
+    function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  </script>
+</body>
+</html>
