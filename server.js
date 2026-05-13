@@ -3,6 +3,7 @@ var express = require('express');
 var cors    = require('cors');
 var fetch   = require('node-fetch');
 var path    = require('path');
+var crypto  = require('crypto');
 var app     = express();
 var PORT    = process.env.PORT || 3001;
 
@@ -186,7 +187,80 @@ app.get('/api/test-city', async function (req, res) {
   }
 });
 
-// Eczane başvurusu kaydet (Railway loglarına düşer)
+// ── Google Indexing API ──────────────────────────────────────────────
+function b64url(str) {
+  return Buffer.from(str).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+async function googleAccessToken() {
+  var email = (process.env.GOOGLE_CLIENT_EMAIL || '').trim();
+  var key   = (process.env.GOOGLE_PRIVATE_KEY  || '').replace(/\\n/g, '\n').trim();
+  if (!email || !key) return null;
+  var now  = Math.floor(Date.now() / 1000);
+  var hdr  = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  var pay  = b64url(JSON.stringify({ iss: email, scope: 'https://www.googleapis.com/auth/indexing', aud: 'https://oauth2.googleapis.com/token', exp: now + 3600, iat: now }));
+  var sign = crypto.createSign('RSA-SHA256');
+  sign.update(hdr + '.' + pay);
+  var sig = sign.sign(key, 'base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  var jwt = hdr + '.' + pay + '.' + sig;
+  var r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + jwt,
+  });
+  var data = await r.json();
+  return data.access_token || null;
+}
+
+async function googleIndexUrl(url, type) {
+  var token = await googleAccessToken();
+  if (!token) return { error: 'GOOGLE_CLIENT_EMAIL veya GOOGLE_PRIVATE_KEY eksik' };
+  var r = await fetch('https://indexing.googleapis.com/v3/urlNotifications:publish', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ url: url, type: type || 'URL_UPDATED' }),
+  });
+  return await r.json();
+}
+
+// URL'leri Google'a gönder — ADMIN_KEY header ile korunur
+app.post('/api/indexing/submit', async function (req, res) {
+  if ((req.headers['x-admin-key'] || '') !== (process.env.ADMIN_KEY || '')) {
+    return res.status(403).json({ error: 'Yetkisiz' });
+  }
+  var urls  = req.body.urls;
+  var type  = req.body.type || 'URL_UPDATED';
+  if (!Array.isArray(urls) || urls.length === 0) return res.status(400).json({ error: 'urls dizisi gerekli' });
+  var results = [];
+  for (var u of urls) {
+    try {
+      var r = await googleIndexUrl(u, type);
+      results.push({ url: u, result: r });
+    } catch (e) {
+      results.push({ url: u, error: e.message });
+    }
+  }
+  res.json({ submitted: results.length, results: results });
+});
+
+// Temel sayfaları Google'a tek seferde gönder
+app.get('/api/indexing/submit-core', async function (req, res) {
+  if ((req.query.key || '') !== (process.env.ADMIN_KEY || '')) {
+    return res.status(403).json({ error: 'Yetkisiz' });
+  }
+  var base = 'https://www.724eczane.com';
+  var coreUrls = ['/', '/eczane-ekle', '/sitene-ekle', '/iletisim'].map(function (p) { return base + p; });
+  var iller2 = require('./data/iller');
+  iller2.forEach(function (il) { coreUrls.push(base + '/nobetci-' + il.slug); });
+  var results = [];
+  for (var u of coreUrls) {
+    try { results.push({ url: u, result: await googleIndexUrl(u, 'URL_UPDATED') }); }
+    catch (e) { results.push({ url: u, error: e.message }); }
+  }
+  res.json({ submitted: results.length, results: results });
+});
+
+// ── Eczane başvurusu kaydet (Railway loglarına düşer) ───────────────────
 app.post('/api/eczane-ekle', function (req, res) {
   var d = req.body || {};
   console.log('[eczane-ekle] Başvuru: ' + (d.name||'?') + ' / ' + (d.il||'?') + ' / ' + (d.ilce||'?') + ' / ' + (d.phone||'?'));

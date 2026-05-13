@@ -12,13 +12,19 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.724eczane.com/">
   <meta property="og:site_name" content="724eczane.com">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<%= title %>">
+  <meta name="twitter:description" content="<%= description %>">
+  <link rel="alternate" hreflang="tr" href="https://www.724eczane.com/">
+  <link rel="alternate" hreflang="x-default" href="https://www.724eczane.com/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.724eczane.com/nobetci-{search_term_string}"},"query-input":"required name=search_term_string"}}
+  [{"@context":"https://schema.org","@type":"WebSite","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.724eczane.com/nobetci-{search_term_string}"},"query-input":"required name=search_term_string"}},{"@context":"https://schema.org","@type":"Organization","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","logo":{"@type":"ImageObject","url":"https://www.724eczane.com/favicon.svg"}}]
   </script>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -37,7 +43,7 @@
         <p class="lead mb-4">81 ilde, tüm ilçelerde nöbetçi eczaneleri anında bulun &mdash; 724eczane.com</p>
         <div class="input-group input-group-lg search-box mx-auto" style="max-width:560px;position:relative">
           <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-danger"></i></span>
-          <input type="text" id="citySearch" class="form-control border-0" placeholder="İl veya ilçe arayın..." autocomplete="off">
+          <input type="text" id="citySearch" class="form-control border-0" placeholder="" autocomplete="off">
           <button id="micBtn" class="btn btn-mic" type="button" title="Sesli ara">
             <i class="fa-solid fa-microphone"></i>
           </button>
@@ -116,48 +122,84 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/app.js"></script>
 <script>
+// Animasyonlu placeholder
+(function () {
+  var inp = document.getElementById('citySearch');
+  if (!inp) return;
+  var phrases = ['İstanbul ara...','Ankara ara...','İzmir ara...','Kadıköy ara...','Beşiktaş ara...','Çankaya ara...','Bornova ara...','Antalya ara...','Nilüfer ara...','Muratpaşa ara...'];
+  var i = 0, c = 0, del = false;
+  function tick() {
+    if (document.activeElement === inp || inp.value) { setTimeout(tick, 400); return; }
+    var ph = phrases[i];
+    if (!del) {
+      c++;
+      inp.placeholder = ph.slice(0, c);
+      if (c >= ph.length) { del = true; setTimeout(tick, 1800); return; }
+      setTimeout(tick, 75);
+    } else {
+      c--;
+      inp.placeholder = ph.slice(0, c);
+      if (c <= 0) { del = false; i = (i + 1) % phrases.length; }
+      setTimeout(tick, 40);
+    }
+  }
+  tick();
+})();
+
+// Sesli arama — Chrome, Edge, Safari destekli; Firefox'ta gizlenir
 (function () {
   var micBtn = document.getElementById('micBtn');
   if (!micBtn) return;
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { micBtn.style.display = 'none'; return; }
-  var rec = new SR();
-  rec.lang = 'tr-TR';
-  rec.continuous = false;
-  rec.interimResults = false;
   var active = false;
+  var _rec = null;
+
+  function resetBtn(title) {
+    active = false;
+    micBtn.classList.remove('mic-active');
+    micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+    micBtn.title = title || 'Sesli ara';
+  }
+
+  function startRec() {
+    var rec = new SR();
+    rec.lang = 'tr-TR';
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.onstart = function () {
+      active = true;
+      micBtn.classList.add('mic-active');
+      micBtn.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
+      micBtn.title = 'Durdurmak için tıklayın';
+    };
+    rec.onresult = function (e) {
+      var text = e.results[0][0].transcript;
+      var inp = document.getElementById('citySearch');
+      inp.value = text;
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+      setTimeout(function () {
+        var first = document.querySelector('#searchResults a');
+        if (first) first.click();
+      }, 600);
+    };
+    rec.onend = function () { resetBtn(); };
+    rec.onabort = function () { resetBtn(); };
+    rec.onerror = function (e) {
+      resetBtn(e.error === 'not-allowed' ? 'Mikrofon izni gerekli' : 'Sesli ara');
+    };
+    try { rec.start(); } catch (err) { resetBtn(); }
+    return rec;
+  }
+
   micBtn.addEventListener('click', function () {
-    if (active) { rec.stop(); return; }
-    rec.start();
+    if (active) {
+      try { if (_rec) _rec.stop(); } catch (e) {}
+      resetBtn();
+      return;
+    }
+    _rec = startRec();
   });
-  rec.onstart = function () {
-    active = true;
-    micBtn.classList.add('mic-active');
-    micBtn.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
-    micBtn.title = 'Durdurmak için tıklayın';
-  };
-  rec.onresult = function (e) {
-    var text = e.results[0][0].transcript;
-    var inp = document.getElementById('citySearch');
-    inp.value = text;
-    inp.dispatchEvent(new Event('input', { bubbles: true }));
-    setTimeout(function () {
-      var first = document.querySelector('#searchResults a');
-      if (first) first.click();
-    }, 600);
-  };
-  rec.onend = function () {
-    active = false;
-    micBtn.classList.remove('mic-active');
-    micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
-    micBtn.title = 'Sesli ara';
-  };
-  rec.onerror = function () {
-    active = false;
-    micBtn.classList.remove('mic-active');
-    micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
-    micBtn.title = 'Sesli ara';
-  };
 })();
 </script>
 </body>
