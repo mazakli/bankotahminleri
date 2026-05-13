@@ -40,6 +40,7 @@ body {
 }
 .search-box .input-group-text { border-radius: 8px 0 0 8px; }
 .search-box .btn { border-radius: 0 8px 8px 0; }
+.search-box .btn:last-child { border-radius: 0 8px 8px 0; }
 
 #searchResults {
   position: absolute;
@@ -47,7 +48,7 @@ body {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  max-width: 500px;
+  max-width: 560px;
   width: 100%;
   max-height: 250px;
   overflow-y: auto;
@@ -217,13 +218,36 @@ body {
 .modal-header.bg-red { background-color: var(--red) !important; }
 
 .footer-dark { background: #1a1a2e; }
-.footer-badge {
-  font-size: 0.8rem;
-  padding: 5px 10px;
-  background: #2d2d44 !important;
-  transition: background 0.15s;
+
+.footer-text { color: #adb5bd; }
+
+.footer-link {
+  color: #adb5bd;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.15s;
 }
-.footer-badge:hover { background: var(--red) !important; }
+.footer-link:hover { color: #fff; }
+
+.btn-mic {
+  background: #fff;
+  color: var(--red);
+  border: none;
+  border-radius: 0;
+  padding: 0 14px;
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-mic:hover { background: var(--red-light); color: var(--red-dark); }
+.btn-mic.mic-active {
+  background: var(--red);
+  color: #fff;
+  animation: mic-pulse 1s infinite;
+}
+@keyframes mic-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
 
 .breadcrumb-item + .breadcrumb-item::before { color: #aaa; }
 
@@ -235,14 +259,6 @@ body {
 }
 
 #loadingSpinner { min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-.footer-link {
-  color: #adb5bd;
-  text-decoration: none;
-  font-size: 0.88rem;
-  transition: color 0.15s;
-}
-.footer-link:hover { color: #fff; }
 
 .embed-feature-card {
   background: #fff;
