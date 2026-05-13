@@ -98,8 +98,6 @@
     if (!modalEl) return;
 
     if (nameEl) nameEl.textContent = name;
-
-    // Reset state
     if (iframe)  { iframe.src = 'about:blank'; iframe.style.display = 'none'; }
     if (spinner) spinner.style.display = '';
 
@@ -118,18 +116,14 @@
 
     if (extLink) extLink.href = mapsUrl;
 
-    // Wait for modal animation to finish, then load iframe
-    function onShown() {
-      modalEl.removeEventListener('shown.bs.modal', onShown);
-      if (iframe) {
-        iframe.onload = function () {
-          if (spinner) spinner.style.display = 'none';
-          iframe.style.display = '';
-        };
-        iframe.src = mapSrc;
-      }
+    // Start loading iframe immediately — runs in parallel with modal animation (~300ms)
+    if (iframe) {
+      iframe.onload = function () {
+        if (spinner) spinner.style.display = 'none';
+        iframe.style.display = '';
+      };
+      iframe.src = mapSrc;
     }
-    modalEl.addEventListener('shown.bs.modal', onShown);
 
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
   };
