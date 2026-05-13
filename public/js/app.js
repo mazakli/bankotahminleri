@@ -94,41 +94,44 @@
     var iframe  = document.getElementById('mapsIframe');
     var spinner = document.getElementById('mapsSpinner');
     var extLink = document.getElementById('mapsExternalLink');
+    var modalEl = document.getElementById('mapsModal');
+    if (!modalEl) return;
 
     if (nameEl) nameEl.textContent = name;
-    if (iframe)  iframe.style.display = 'none';
+
+    // Reset state
+    if (iframe)  { iframe.src = 'about:blank'; iframe.style.display = 'none'; }
     if (spinner) spinner.style.display = '';
 
     var mapsUrl, mapSrc;
     if (lat && lng) {
       var fLat = parseFloat(lat), fLng = parseFloat(lng);
-      // OpenStreetMap embed (no API key, no iframe restrictions)
       mapSrc  = 'https://www.openstreetmap.org/export/embed.html'
               + '?bbox=' + (fLng - 0.005) + ',' + (fLat - 0.005) + ',' + (fLng + 0.005) + ',' + (fLat + 0.005)
               + '&layer=mapnik&marker=' + fLat + ',' + fLng;
-      // External link still uses Google Maps for navigation
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(lat + ',' + lng);
     } else {
-      var q = (address || name);
-      mapSrc  = 'https://www.openstreetmap.org/export/embed.html?bbox=28.97,41.00,29.10,41.12&layer=mapnik'
-              + '&query=' + encodeURIComponent(q);
+      var q = address || name;
+      mapSrc  = 'https://www.openstreetmap.org/export/embed.html?bbox=26.0,36.0,45.0,42.0&layer=mapnik';
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q);
     }
 
     if (extLink) extLink.href = mapsUrl;
-    if (iframe) {
-      iframe.onload = function () {
-        if (spinner) spinner.style.display = 'none';
-        iframe.style.display = '';
-      };
-      iframe.src = mapSrc;
-    }
 
-    var modalEl = document.getElementById('mapsModal');
-    if (modalEl) {
-      var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      modal.show();
+    // Wait for modal animation to finish, then load iframe
+    function onShown() {
+      modalEl.removeEventListener('shown.bs.modal', onShown);
+      if (iframe) {
+        iframe.onload = function () {
+          if (spinner) spinner.style.display = 'none';
+          iframe.style.display = '';
+        };
+        iframe.src = mapSrc;
+      }
     }
+    modalEl.addEventListener('shown.bs.modal', onShown);
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
   };
 
   function initTableSearch() {
