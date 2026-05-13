@@ -46,11 +46,11 @@ function nosyHeaders(apiKey) {
   return { 'Authorization': 'Bearer ' + apiKey, 'Accept': 'application/json' };
 }
 
-function nosyFetch(apiKey, il, ilce, tarih) {
+function nosyFetch(apiKey, citySlug, districtSlug, tarih) {
   var url = NOSY_BASE + 'pharmacies-on-duty'
-    + '?il=' + encodeURIComponent(il);
-  if (ilce) url += '&ilce=' + encodeURIComponent(ilce);
-  url += '&tarih=' + encodeURIComponent(tarih);
+    + '?city=' + encodeURIComponent(citySlug);
+  if (districtSlug) url += '&district=' + encodeURIComponent(districtSlug);
+  url += '&date=' + encodeURIComponent(tarih);
   return fetch(url, { headers: nosyHeaders(apiKey) });
 }
 
@@ -61,7 +61,7 @@ function parsePharmacies(json) {
   return rows.map(function(p) {
     return {
       name:    p.EczaneAdi    || p.eczaneAdi    || p.name    || '',
-      dist:    p.Ilce         || p.ilce         || p.dist    || '',
+      dist:    p.Ilce         || p.ilce         || p.district || p.dist || '',
       address: p.Adres        || p.adres        || p.address || '',
       phone:   p.Telefon      || p.telefon      || p.phone   || '',
       lat:     p.Enlem        || p.enlem        || p.latitude  || p.lat || '',
@@ -169,26 +169,17 @@ app.get('/api/test-nosyapi', async function(req, res) {
       try { parsed = JSON.parse(text); } catch(e) {}
       var rows = parsed && (parsed.data || parsed.result || parsed.payload);
       var firstRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
-      return {
-        status: r.status,
-        rowCount: parsed && parsed.rowCount,
-        firstRowKeys: firstRow ? Object.keys(firstRow) : null,
-        firstRow: firstRow,
-        raw: text.slice(0, 400)
-      };
+      return { status: r.status, rowCount: parsed && parsed.rowCount, firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 300) };
     } catch(e) { return { error: e.message }; }
   }
 
-  var citiesUrl   = NOSY_BASE + 'pharmacies-on-duty/cities';
-  var istanbulTR  = NOSY_BASE + 'pharmacies-on-duty?il=' + encodeURIComponent('İstanbul') + '&tarih=' + encodeURIComponent(tarih);
-  var istanbulEN  = NOSY_BASE + 'pharmacies-on-duty?il=istanbul&tarih=' + encodeURIComponent(tarih);
-  var istanbulUP  = NOSY_BASE + 'pharmacies-on-duty?il=ISTANBUL&tarih=' + encodeURIComponent(tarih);
-
+  var base = NOSY_BASE + 'pharmacies-on-duty?';
   res.json({
-    cities_sample: await tryUrl(citiesUrl),
-    istanbul_tr:   await tryUrl(istanbulTR),
-    istanbul_en:   await tryUrl(istanbulEN),
-    istanbul_upper: await tryUrl(istanbulUP)
+    city_date:     await tryUrl(base + 'city=istanbul&date=' + tarih),
+    slug_date:     await tryUrl(base + 'slug=istanbul&date=' + tarih),
+    city_tarih:    await tryUrl(base + 'city=istanbul&tarih=' + tarih),
+    il_tarih:      await tryUrl(base + 'il=istanbul&tarih=' + tarih),
+    no_params:     await tryUrl(NOSY_BASE + 'pharmacies-on-duty')
   });
 });
 
