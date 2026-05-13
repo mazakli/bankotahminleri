@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://724eczane.com/sitene-ekle">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= description %>">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="724eczane.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<%- include('partials/navbar') %>
+
+<main class="flex-grow-1">
+
+<section class="hero-section py-4 text-white text-center">
+  <div class="container">
+    <h1 class="h2 fw-bold mb-2"><i class="fa-solid fa-code me-2"></i>Sitenize Nöbetçi Eczane Ekleyin</h1>
+    <p class="lead mb-0">İl ve ilçe seçin, tek satır kod ile sitenize entegre edin &mdash; tamamen ücretsiz.</p>
+  </div>
+</section>
+
+<section class="py-4 bg-light border-bottom">
+  <div class="container">
+    <div class="row g-3 text-center">
+      <div class="col-md-4">
+        <div class="embed-feature-card h-100">
+          <i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i>
+          <h3 class="h6 fw-bold">Tamamen Ücresiz</h3>
+          <p class="text-muted small mb-0">API key, üyelik veya ödeme gerektirmez. Herkes kullanabilir.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="embed-feature-card h-100">
+          <i class="fa-solid fa-bolt fa-2x text-warning mb-2"></i>
+          <h3 class="h6 fw-bold">Tek Satır Entegrasyon</h3>
+          <p class="text-muted small mb-0">&lt;iframe&gt; kodunu kopyalayın, sayfanıza yapıştırın. Hepsi bu kadar.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="embed-feature-card h-100">
+          <i class="fa-solid fa-rotate fa-2x text-primary mb-2"></i>
+          <h3 class="h6 fw-bold">Otomatik Güncelleme</h3>
+          <p class="text-muted small mb-0">Nöbetçi eczane listesi günlük olarak otomatik güncellenir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-header bg-danger text-white fw-bold">
+            <i class="fa-solid fa-sliders me-2"></i>1. Şehir ve İlçe Seçin
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-sm-5">
+                <label class="form-label fw-semibold small">İl</label>
+                <select id="seIl" class="form-select">
+                  <option value="">— İl seçin —</option>
+                  <% iller.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');}).forEach(function(il){ %>
+                  <option value="<%= il.slug %>" data-districts='<%- JSON.stringify(il.districts) %>'><%= il.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="col-sm-5">
+                <label class="form-label fw-semibold small">İlçe <span class="text-muted">(isteğe bağlı)</span></label>
+                <select id="seIlce" class="form-select" disabled>
+                  <option value="">Tüm İlçeler</option>
+                </select>
+              </div>
+              <div class="col-sm-2 d-flex align-items-end">
+                <button id="seBtn" class="btn btn-danger w-100" onclick="generateEmbed()" disabled>
+                  <i class="fa-solid fa-code me-1"></i>Kodu Al
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="embedResult" style="display:none">
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-code me-2"></i>2. Embed Kodunu Kopyalayın</span>
+              <button class="btn btn-sm btn-outline-light" onclick="copyCode()">
+                <i class="fa-solid fa-copy me-1"></i>Kopyala
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <textarea id="embedCode" class="embed-code-box w-100 border-0" rows="3" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header fw-bold">
+              <i class="fa-solid fa-eye me-2"></i>3. Önizleme
+            </div>
+            <div class="card-body p-0">
+              <iframe id="embedPreview" src="" width="100%" height="350" frameborder="0" style="display:block;"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-success d-flex align-items-start gap-3">
+          <i class="fa-solid fa-gift fa-lg mt-1 flex-shrink-0"></i>
+          <div>
+            <strong>Tamamen Ücresiz!</strong> Bu widget'ı kullanmak için herhangi bir kayıt, API anahtarı veya ödeme gerekmez. İstediğiniz kadar sayfaya ekleyebilirsiniz.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="h4 fw-bold text-danger mb-2 text-center">
+      <i class="fa-solid fa-star me-2"></i>Referanslar
+    </h2>
+    <p class="text-center text-muted small mb-4">Widget'ı kullanan siteler</p>
+    <div class="text-center text-muted py-3">
+      <i class="fa-solid fa-handshake fa-3x mb-3 text-secondary"></i>
+      <p class="mb-1">Sitenize ekledikten sonra bize bildirin, burada gösterelim.</p>
+      <a href="/iletisim" class="btn btn-outline-danger btn-sm mt-2">
+        <i class="fa-solid fa-envelope me-1"></i>Bize Ulaşın
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<%- include('partials/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+var _illerMap = {};
+document.querySelectorAll('#seIl option[data-districts]').forEach(function(opt){
+  _illerMap[opt.value] = JSON.parse(opt.dataset.districts);
+});
+
+document.getElementById('seIl').addEventListener('change', function(){
+  var ilSlug   = this.value;
+  var ilceSelect = document.getElementById('seIlce');
+  var btn      = document.getElementById('seBtn');
+  ilceSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
+  document.getElementById('embedResult').style.display = 'none';
+  if(!ilSlug){ ilceSelect.disabled = true; btn.disabled = true; return; }
+  var districts = _illerMap[ilSlug] || [];
+  districts.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tr');}).forEach(function(d){
+    var o = document.createElement('option');
+    o.value = d.slug; o.textContent = d.name;
+    ilceSelect.appendChild(o);
+  });
+  ilceSelect.disabled = false;
+  btn.disabled = false;
+});
+
+function generateEmbed(){
+  var il   = document.getElementById('seIl').value;
+  var ilce = document.getElementById('seIlce').value;
+  if(!il) return;
+  var src  = 'https://724eczane.com/widget?il=' + il + (ilce ? '&ilce=' + ilce : '');
+  var code = '<iframe src="' + src + '" width="100%" height="400" frameborder="0" style="border:none;border-radius:8px;" title="Nöbetçi Eczaneler - 724eczane.com"></iframe>';
+  document.getElementById('embedCode').value = code;
+  document.getElementById('embedPreview').src = '/widget?il=' + il + (ilce ? '&ilce=' + ilce : '');
+  document.getElementById('embedResult').style.display = '';
+  document.getElementById('embedResult').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function copyCode(){
+  var ta = document.getElementById('embedCode');
+  ta.select();
+  document.execCommand('copy');
+  var btn = event.currentTarget;
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-check me-1"></i>Kopyalandı!';
+  setTimeout(function(){ btn.innerHTML = orig; }, 2000);
+}
+</script>
+</body>
+</html>

@@ -150,7 +150,6 @@ app.get('/api/cache-status', function (req, res) {
   });
 });
 
-// Diagnostic: test NosyAPI call for a specific city directly
 app.get('/api/test-city', async function (req, res) {
   var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
@@ -183,13 +182,13 @@ app.get('/nobetci-:slug', function (req, res, next) {
   var slug  = req.params.slug;
   var iller = require('./data/iller');
   var il    = iller.find(function (i) { return i.slug === slug; });
-  if (il) return res.render('il', { il: il, iller: iller, today: getDateInfo(), title: il.name + ' Nöbetçi Eczaneleri - Bugün Açık Eczaneler', description: 'Bugün ' + il.name + ' ilindeki nöbetçi eczaneleri bulun.' });
+  if (il) return res.render('il', { il: il, iller: iller, today: getDateInfo(), title: il.name + ' Nöbetçi Eczaneleri | 724eczane.com', description: 'Bugün ' + il.name + ' ilindeki nöbetçi eczaneleri. Adres, telefon ve yol tarifi bilgileriyle güncel liste — 724eczane.com' });
   for (var i = 0; i < iller.length; i++) {
     var cur = iller[i];
     if (slug.startsWith(cur.slug + '-')) {
       var ilceSlug = slug.slice(cur.slug.length + 1);
       var ilce = cur.districts.find(function (d) { return d.slug === ilceSlug; });
-      if (ilce) return res.render('ilce', { il: cur, ilce: ilce, iller: iller, today: getDateInfo(), title: cur.name + ' ' + ilce.name + ' Nöbetçi Eczaneleri', description: 'Bugün ' + cur.name + ' ' + ilce.name + ' ilçesindeki nöbetçi eczaneleri bulun.' });
+      if (ilce) return res.render('ilce', { il: cur, ilce: ilce, iller: iller, today: getDateInfo(), title: cur.name + ' ' + ilce.name + ' Nöbetçi Eczaneleri | 724eczane.com', description: 'Bugün ' + cur.name + ' ' + ilce.name + ' ilçesindeki nöbetçi eczaneleri. Adres, telefon ve yol tarifi bilgileriyle güncel liste.' });
     }
   }
   next();
@@ -197,7 +196,37 @@ app.get('/nobetci-:slug', function (req, res, next) {
 
 app.get('/', function (req, res) {
   var iller = require('./data/iller');
-  res.render('home', { iller: iller, title: 'Türkiye Nöbetçi Eczane Rehberi - Bugün Açık Eczaneler', description: "Türkiye'nin 81 ilindeki nöbetçi eczaneleri bulun." });
+  res.render('home', { iller: iller, title: 'Türkiye Nöbetçi Eczane Rehberi | 724eczane.com', description: "Türkiye'nin 81 ilinde nöbetçi eczaneleri anında bulun. İl ve ilçe bazlı güncel nöbetçi eczane listesi — 724eczane.com" });
+});
+
+app.get('/widget', function (req, res) {
+  var iller    = require('./data/iller');
+  var ilSlug   = (req.query.il   || '').trim();
+  var ilceSlug = (req.query.ilce || '').trim();
+  var il = iller.find(function (i) { return i.slug === ilSlug; });
+  if (!il) return res.status(404).send('İl bulunamadı');
+  var ilce = ilceSlug ? (il.districts.find(function (d) { return d.slug === ilceSlug; }) || null) : null;
+  res.render('widget', { il: il, ilce: ilce, today: getDateInfo() });
+});
+
+app.get('/sitene-ekle', function (req, res) {
+  var iller = require('./data/iller');
+  res.render('sitene-ekle', { iller: iller, title: 'Sitenize Nöbetçi Eczane Ekleyin | 724eczane.com', description: 'Tek satır kod ile nöbetçi eczane listesini sitenize ücretsiz ekleyin. İl ve ilçe seçin, iframe kodunu kopyalayın.' });
+});
+
+app.get('/iletisim', function (req, res) {
+  var iller = require('./data/iller');
+  res.render('iletisim', { iller: iller, title: 'İletişim | 724eczane.com', description: '724eczane.com ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.' });
+});
+
+app.get('/gizlilik', function (req, res) {
+  var iller = require('./data/iller');
+  res.render('gizlilik', { iller: iller, title: 'Gizlilik Politikası | 724eczane.com', description: '724eczane.com gizlilik politikası. Kişisel verilerinizin nasıl toplandığını ve kullanıldığını öğrenin.' });
+});
+
+app.get('/kullanim-kosullari', function (req, res) {
+  var iller = require('./data/iller');
+  res.render('kullanim-kosullari', { iller: iller, title: 'Kullanım Koşulları | 724eczane.com', description: '724eczane.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.' });
 });
 
 app.get('/health',    function (req, res) { res.json({ status: 'ok', time: new Date().toISOString() }); });

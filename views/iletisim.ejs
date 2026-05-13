@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://724eczane.com/iletisim">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= description %>">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="724eczane.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<%- include('partials/navbar') %>
+
+<main class="flex-grow-1">
+
+<section class="hero-section py-4 text-white text-center">
+  <div class="container">
+    <h1 class="h2 fw-bold mb-2"><i class="fa-solid fa-envelope me-2"></i>İletişim</h1>
+    <p class="lead mb-0">Sorularınız, önerileriniz veya geri bildirimleriniz için bize ulaşın.</p>
+  </div>
+</section>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <div class="row g-4 mb-5">
+          <div class="col-md-4">
+            <div class="contact-info-card text-center p-4 h-100">
+              <i class="fa-solid fa-globe fa-2x text-danger mb-3"></i>
+              <h3 class="h6 fw-bold">Web Sitesi</h3>
+              <p class="text-muted small mb-0">724eczane.com</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="contact-info-card text-center p-4 h-100">
+              <i class="fa-solid fa-code fa-2x text-danger mb-3"></i>
+              <h3 class="h6 fw-bold">Widget Entegrasyonu</h3>
+              <p class="text-muted small mb-0">Sitenize eczane widgeti eklemek için <a href="/sitene-ekle" class="text-danger text-decoration-none">Sitene Ekle</a> sayfasını ziyaret edin.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="contact-info-card text-center p-4 h-100">
+              <i class="fa-solid fa-shield-halved fa-2x text-danger mb-3"></i>
+              <h3 class="h6 fw-bold">Veri &amp; Gizlilik</h3>
+              <p class="text-muted small mb-0"><a href="/gizlilik" class="text-danger text-decoration-none">Gizlilik Politikamızı</a> inceleyebilirsiniz.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-danger text-white fw-bold">
+            <i class="fa-solid fa-paper-plane me-2"></i>Mesaj Gönderin
+          </div>
+          <div class="card-body p-4">
+            <div id="contactFormWrap">
+              <form id="contactForm" novalidate>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Ad Soyad <span class="text-danger">*</span></label>
+                  <input type="text" id="cName" class="form-control" placeholder="Adınız ve soyadınız" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">E-posta <span class="text-danger">*</span></label>
+                  <input type="email" id="cEmail" class="form-control" placeholder="ornek@eposta.com" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Konu <span class="text-danger">*</span></label>
+                  <select id="cSubject" class="form-select" required>
+                    <option value="">— Konu seçin —</option>
+                    <option value="Hata Bildirimi">Hata Bildirimi</option>
+                    <option value="Widget Entegrasyonu">Widget Entegrasyonu</option>
+                    <option value="Referans Ekleme">Referans Ekleme Talebi</option>
+                    <option value="Öneri">Öneri</option>
+                    <option value="Diğer">Diğer</option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label fw-semibold">Mesajınız <span class="text-danger">*</span></label>
+                  <textarea id="cMessage" class="form-control" rows="5" placeholder="Mesajınızı buraya yazın..." required></textarea>
+                </div>
+                <div id="formError" class="alert alert-danger d-none"></div>
+                <button type="submit" class="btn btn-danger px-4">
+                  <i class="fa-solid fa-paper-plane me-2"></i>Gönder
+                </button>
+              </form>
+            </div>
+            <div id="contactSuccess" class="text-center py-4 d-none">
+              <i class="fa-solid fa-circle-check fa-3x text-success mb-3"></i>
+              <h4 class="fw-bold">Mesajınız Alındı!</h4>
+              <p class="text-muted">En kısa sürede size geri dönüş yapacağız. Teşekkür ederiz.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<%- include('partials/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var name    = document.getElementById('cName').value.trim();
+  var email   = document.getElementById('cEmail').value.trim();
+  var subject = document.getElementById('cSubject').value;
+  var message = document.getElementById('cMessage').value.trim();
+  var errEl   = document.getElementById('formError');
+  errEl.classList.add('d-none');
+  if (!name || !email || !subject || !message) {
+    errEl.textContent = 'Lütfen tüm alanları doldurun.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Geçerli bir e-posta adresi girin.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+  document.getElementById('contactFormWrap').classList.add('d-none');
+  document.getElementById('contactSuccess').classList.remove('d-none');
+});
+</script>
+</body>
+</html>
