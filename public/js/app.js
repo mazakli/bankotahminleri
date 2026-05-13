@@ -3,6 +3,7 @@
 
   var currentDate = '';
   var allPharmacies = [];
+  var _leafletMap = null;
 
   function $(id) { return document.getElementById(id); }
   function show(id) { var el = $(id); if (el) el.style.display = ''; }
@@ -90,43 +91,95 @@
   }
 
   window.showDirections = function (name, address, lat, lng) {
-    var nameEl  = document.getElementById('modalPharmacyName');
-    var iframe  = document.getElementById('mapsIframe');
-    var spinner = document.getElementById('mapsSpinner');
-    var extLink = document.getElementById('mapsExternalLink');
-    var modalEl = document.getElementById('mapsModal');
+    var nameEl  = $('modalPharmacyName');
+    var extLink = $('mapsExternalLink');
+    var modalEl = $('mapsModal');
     if (!modalEl) return;
 
     if (nameEl) nameEl.textContent = name;
-    if (iframe)  { iframe.src = 'about:blank'; iframe.style.display = 'none'; }
-    if (spinner) spinner.style.display = '';
 
-    var mapsUrl, mapSrc;
-    if (lat && lng) {
-      var fLat = parseFloat(lat), fLng = parseFloat(lng);
-      mapSrc  = 'https://www.openstreetmap.org/export/embed.html'
-              + '?bbox=' + (fLng - 0.005) + ',' + (fLat - 0.005) + ',' + (fLng + 0.005) + ',' + (fLat + 0.005)
-              + '&layer=mapnik&marker=' + fLat + ',' + fLng;
-      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(lat + ',' + lng);
-    } else {
-      var q = address || name;
-      mapSrc  = 'https://www.openstreetmap.org/export/embed.html?bbox=26.0,36.0,45.0,42.0&layer=mapnik';
-      mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q);
-    }
+    var fLat = lat ? parseFloat(lat) : null;
+    var fLng = lng ? parseFloat(lng) : null;
 
+    var mapsUrl = (fLat && fLng)
+      ? 'https://www.google.com/maps/dir/?api=1&destination=' + fLat + ',' + fLng
+      : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address || name);
     if (extLink) extLink.href = mapsUrl;
 
-    // Start loading iframe immediately — runs in parallel with modal animation (~300ms)
-    if (iframe) {
-      iframe.onload = function () {
-        if (spinner) spinner.style.display = 'none';
-        iframe.style.display = '';
-      };
-      iframe.src = mapSrc;
+    // Destroy previous map
+    if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
+
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    function onShown() {
+      modalEl.removeEventListener('shown.bs.modal', onShown);
+      var container = $('mapContainer');
+      if (!container) return;
+
+      if (!fLat || !fLng) {
+        container.innerHTML = '<div class="p-4 text-center text-muted">Koordinat bilgisi bulunamadı. Google Maps\'te açmak için aşağıdaki butonu kullanın.</div>';
+        return;
+      }
+
+      var destLL = L.latLng(fLat, fLng);
+      _leafletMap = L.map(container).setView(destLL, 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(_leafletMap);
+
+      // Eczane marker
+      L.marker(destLL)
+        .addTo(_leafletMap)
+        .bindPopup('<strong>' + name + '</strong><br><small>' + (address || '') + '</small>')
+        .openPopup();
+
+      _leafletMap.invalidateSize();
+
+      // Kullanici konumu al ve rota ciz
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (pos) {
+            var userLL = L.latLng(pos.coords.latitude, pos.coords.longitude);
+            L.Routing.control({
+              waypoints: [userLL, destLL],
+              router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1'
+              }),
+              lineOptions: {
+                styles: [{ color: '#dc3545', weight: 5, opacity: 0.8 }]
+              },
+              show: false,
+              addWaypoints: false,
+              routeWhileDragging: false,
+              fitSelectedRoutes: true,
+              showAlternatives: false,
+              createMarker: function (i, wp) {
+                if (i === 0) {
+                  return L.marker(wp.latLng).bindPopup('Konumunuz');
+                }
+                return L.marker(wp.latLng)
+                  .bindPopup('<strong>' + name + '</strong>');
+              }
+            }).addTo(_leafletMap);
+          },
+          function () { /* konum izni verilmedi, sadece harita gosterilir */ },
+          { timeout: 6000, maximumAge: 60000 }
+        );
+      }
     }
 
-    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    modalEl.addEventListener('shown.bs.modal', onShown);
+    modal.show();
   };
+
+  // Modal kapaninca haritayi temizle
+  var modalEl = document.getElementById('mapsModal');
+  if (modalEl) {
+    modalEl.addEventListener('hidden.bs.modal', function () {
+      if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
+    });
+  }
 
   function initTableSearch() {
     var input = $('tableSearch');
