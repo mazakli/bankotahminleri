@@ -51,11 +51,10 @@ function nosyHeaders(apiKey) {
 
 function nosyFetch(apiKey, il, ilce, tarih) {
   var url = NOSY_BASE + 'pharmacies-on-duty'
-    + '?apikey=' + encodeURIComponent(apiKey)
-    + '&il=' + encodeURIComponent(il);
+    + '?il=' + encodeURIComponent(il);
   if (ilce) url += '&ilce=' + encodeURIComponent(ilce);
   url += '&tarih=' + encodeURIComponent(tarih);
-  return fetch(url, { headers: { 'Accept': 'application/json' } });
+  return fetch(url, { headers: nosyHeaders(apiKey) });
 }
 
 function parsePharmacies(json) {
@@ -97,12 +96,10 @@ app.get('/api/eczaneler', async function(req, res) {
   try {
     var r = await nosyFetch(apiKey, il, ilce, tarih);
     var text = await r.text();
-
     var json;
     try { json = JSON.parse(text); } catch(e) {
       return res.status(502).json({ error: 'API JSON döndürmedi', raw: text.slice(0, 200) });
     }
-
     var pharmacies = parsePharmacies(json);
     pharmacyCache.set(cacheKey, { data: pharmacies, ts: Date.now() });
     res.json({ pharmacies: pharmacies });
@@ -167,9 +164,9 @@ app.get('/api/test-nosyapi', async function(req, res) {
   var il    = (req.query.il || 'istanbul').trim();
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
 
-  async function tryUrl(url) {
+  async function tryUrl(url, headers) {
     try {
-      var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      var r = await fetch(url, { headers: headers || { 'Accept': 'application/json' } });
       var text = await r.text();
       var parsed = null;
       try { parsed = JSON.parse(text); } catch(e) {}
@@ -182,13 +179,15 @@ app.get('/api/test-nosyapi', async function(req, res) {
     } catch(e) { return { error: e.message }; }
   }
 
-  var checkUrl = NOSY_BASE + 'nosy-service/check?apikey=' + encodeURIComponent(apiKey);
-  var mainUrl  = NOSY_BASE + 'pharmacies-on-duty?apikey=' + encodeURIComponent(apiKey) + '&il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
+  var bearerHeaders = nosyHeaders(apiKey);
+  var mainUrl = NOSY_BASE + 'pharmacies-on-duty?il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
+  var checkUrl = NOSY_BASE + 'pharmacies-on-duty/status';
 
   res.json({
     keyLength: apiKey.length,
-    check: await tryUrl(checkUrl),
-    pharmacies: await tryUrl(mainUrl)
+    status_endpoint: await tryUrl(checkUrl, bearerHeaders),
+    pharmacies_bearer: await tryUrl(mainUrl, bearerHeaders),
+    pharmacies_queryparam: await tryUrl(mainUrl + '&apikey=' + encodeURIComponent(apiKey))
   });
 });
 
