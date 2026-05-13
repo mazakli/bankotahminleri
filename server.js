@@ -40,6 +40,21 @@ var demoPharmacies = [
   { name: 'HAYAT ECZANESİ',  dist: 'MERKEZ', address: 'Yıldız Mah. Gül Sok. No:3',      phone: '0312 555 77 88', lat: '', lng: '' }
 ];
 
+function nosyFetch(apiKey, il, ilce, tarih) {
+  var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
+    + '?il=' + encodeURIComponent(il);
+  if (ilce) apiUrl += '&ilce=' + encodeURIComponent(ilce);
+  apiUrl += '&tarih=' + encodeURIComponent(tarih);
+
+  return fetch(apiUrl, {
+    headers: {
+      'Authorization': 'Bearer ' + apiKey,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+  });
+}
+
 app.get('/api/eczaneler', async function(req, res) {
   var il    = (req.query.il    || '').trim();
   var ilce  = (req.query.ilce  || '').trim();
@@ -61,13 +76,7 @@ app.get('/api/eczaneler', async function(req, res) {
   }
 
   try {
-    var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
-      + '?apikey=' + encodeURIComponent(apiKey)
-      + '&il=' + encodeURIComponent(il);
-    if (ilce) apiUrl += '&ilce=' + encodeURIComponent(ilce);
-    apiUrl += '&tarih=' + encodeURIComponent(tarih);
-
-    var r = await fetch(apiUrl);
+    var r = await nosyFetch(apiKey, il, ilce, tarih);
 
     if (!r.ok) {
       var errText = await r.text();
@@ -156,12 +165,17 @@ app.get('/api/test-nosyapi', async function(req, res) {
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
 
   var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
-    + '?apikey=' + encodeURIComponent(apiKey)
-    + '&il=' + encodeURIComponent(il)
+    + '?il=' + encodeURIComponent(il)
     + '&tarih=' + encodeURIComponent(tarih);
 
   try {
-    var r = await fetch(apiUrl);
+    var r = await fetch(apiUrl, {
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
     var text = await r.text();
     var parsed = null;
     try { parsed = JSON.parse(text); } catch(e) {}
@@ -170,7 +184,8 @@ app.get('/api/test-nosyapi', async function(req, res) {
       var rows = parsed.data || parsed.payload || parsed.result || parsed;
       if (Array.isArray(rows) && rows.length > 0) firstRow = rows[0];
     }
-    res.json({ status: r.status, url: apiUrl.replace(apiKey, '***'), firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 500) });
+    var isHtml = text.trim().startsWith('<');
+    res.json({ status: r.status, isHtml: isHtml, url: apiUrl, firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 300) });
   } catch(err) {
     res.json({ error: err.message });
   }
