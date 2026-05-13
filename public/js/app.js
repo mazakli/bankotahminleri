@@ -8,8 +8,8 @@
   function show(id) { var el = $(id); if (el) el.style.display = ''; }
   function hide(id) { var el = $(id); if (el) el.style.display = 'none'; }
 
-  function loadPharmacies(il, ilce, date) {
-    if (!il || !date) return;
+  function loadPharmacies(citySlug, districtSlug, date) {
+    if (!citySlug || !date) return;
     currentDate = date;
 
     show('loadingSpinner');
@@ -17,8 +17,8 @@
     hide('noDataMsg');
     hide('errorMsg');
 
-    var url = '/api/eczaneler?il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(date);
-    if (ilce) url += '&ilce=' + encodeURIComponent(ilce);
+    var url = '/api/eczaneler?il=' + encodeURIComponent(citySlug) + '&tarih=' + encodeURIComponent(date);
+    if (districtSlug) url += '&ilce=' + encodeURIComponent(districtSlug);
 
     fetch(url)
       .then(function (r) {
@@ -28,15 +28,9 @@
       .then(function (data) {
         hide('loadingSpinner');
         allPharmacies = data.pharmacies || [];
-
-        if (allPharmacies.length === 0) {
-          show('noDataMsg');
-          return;
-        }
-
+        if (allPharmacies.length === 0) { show('noDataMsg'); return; }
         renderTable(allPharmacies);
         show('pharmacyTableWrap');
-
         var badge = $('pharmacyCount');
         if (badge) badge.textContent = allPharmacies.length + ' nöbetçi eczane';
       })
@@ -50,7 +44,6 @@
     var tbody = $('pharmacyTbody');
     if (!tbody) return;
     tbody.innerHTML = '';
-
     pharmacies.forEach(function (p, idx) {
       var tr = document.createElement('tr');
       tr.innerHTML =
@@ -78,10 +71,7 @@
 
   function esc(str) {
     return String(str || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   function initDayTabs() {
@@ -91,26 +81,23 @@
         tabs.forEach(function (t) { t.classList.remove('active'); });
         tab.classList.add('active');
         var date = tab.getAttribute('data-date');
-        if (window.PAGE_IL) {
-          loadPharmacies(window.PAGE_IL, window.PAGE_ILCE || '', date);
+        if (window.PAGE_ILSLUG) {
+          loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', date);
         }
       });
     });
   }
 
   window.showDirections = function (name, address, lat, lng) {
-    var nameEl = document.getElementById('modalPharmacyName');
-    var iframe = document.getElementById('mapsIframe');
+    var nameEl  = document.getElementById('modalPharmacyName');
+    var iframe  = document.getElementById('mapsIframe');
     var spinner = document.getElementById('mapsSpinner');
     var extLink = document.getElementById('mapsExternalLink');
-
     if (nameEl) nameEl.textContent = name;
     if (iframe)  iframe.style.display = 'none';
     if (spinner) spinner.style.display = '';
-
     var query = address || name;
     var mapSrc, mapsUrl;
-
     if (lat && lng) {
       mapSrc  = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&output=embed&z=16';
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
@@ -118,17 +105,11 @@
       mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(query) + '&output=embed&z=16';
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(query);
     }
-
     if (extLink) extLink.href = mapsUrl;
-
     if (iframe) {
-      iframe.onload = function () {
-        if (spinner) spinner.style.display = 'none';
-        iframe.style.display = '';
-      };
+      iframe.onload = function () { if (spinner) spinner.style.display = 'none'; iframe.style.display = ''; };
       iframe.src = mapSrc;
     }
-
     var modal = new bootstrap.Modal(document.getElementById('mapsModal'));
     modal.show();
   };
@@ -138,14 +119,11 @@
     if (!input) return;
     input.addEventListener('input', function () {
       var q = input.value.toLowerCase().trim();
-      if (!q) {
-        renderTable(allPharmacies);
-        return;
-      }
+      if (!q) { renderTable(allPharmacies); return; }
       var filtered = allPharmacies.filter(function (p) {
-        return (p.name    || '').toLowerCase().includes(q) ||
+        return (p.name || '').toLowerCase().includes(q) ||
                (p.address || '').toLowerCase().includes(q) ||
-               (p.dist    || '').toLowerCase().includes(q);
+               (p.dist || '').toLowerCase().includes(q);
       });
       renderTable(filtered);
       var badge = $('pharmacyCount');
@@ -165,22 +143,12 @@
     if (!input) return;
     var results = document.getElementById('searchResults');
     if (!results) return;
-
-    input.addEventListener('input', function () {
-      triggerSearch(input.value);
-    });
-
+    input.addEventListener('input', function () { triggerSearch(input.value); });
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        var first = results.querySelector('a');
-        if (first) first.click();
-      }
+      if (e.key === 'Enter') { var first = results.querySelector('a'); if (first) first.click(); }
     });
-
     document.addEventListener('click', function (e) {
-      if (!input.contains(e.target) && !results.contains(e.target)) {
-        results.innerHTML = '';
-      }
+      if (!input.contains(e.target) && !results.contains(e.target)) results.innerHTML = '';
     });
   }
 
@@ -189,30 +157,21 @@
     if (!results) return;
     var q = val.trim().toLowerCase();
     if (q.length < 2) { results.innerHTML = ''; return; }
-
     if (!window._illerData) {
       results.innerHTML = '<div class="p-3 text-muted small">Yükleniyor...</div>';
       return;
     }
-
     var matches = [];
     window._illerData.forEach(function (il) {
-      if (il.name.toLowerCase().includes(q) || il.slug.includes(q)) {
+      if (il.name.toLowerCase().includes(q) || il.slug.includes(q))
         matches.push({ label: il.name, url: '/nobetci-' + il.slug, type: 'il' });
-      }
       il.districts.forEach(function (d) {
-        if (d.name.toLowerCase().includes(q) || d.slug.includes(q)) {
+        if (d.name.toLowerCase().includes(q) || d.slug.includes(q))
           matches.push({ label: il.name + ' › ' + d.name, url: '/nobetci-' + il.slug + '-' + d.slug, type: 'ilce' });
-        }
       });
     });
-
     matches = matches.slice(0, 12);
-    if (matches.length === 0) {
-      results.innerHTML = '<div class="p-3 text-muted small">Sonuç bulunamadı</div>';
-      return;
-    }
-
+    if (matches.length === 0) { results.innerHTML = '<div class="p-3 text-muted small">Sonuç bulunamadı</div>'; return; }
     results.innerHTML = matches.map(function (m) {
       var icon = m.type === 'il'
         ? '<i class="fa-solid fa-city me-2 text-danger"></i>'
@@ -225,11 +184,10 @@
     initDayTabs();
     initTableSearch();
     initHomeSearch();
-
-    if (window.PAGE_IL) {
+    if (window.PAGE_ILSLUG) {
       var activeTab = document.querySelector('.day-tab.active');
       var date = activeTab ? activeTab.getAttribute('data-date') : '';
-      if (date) loadPharmacies(window.PAGE_IL, window.PAGE_ILCE || '', date);
+      if (date) loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', date);
     }
   });
 
