@@ -14,20 +14,24 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
-
-// Güncelleme saatleri (Türkiye saati = UTC+3)
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
 
 var allCache = { date: null, data: [], lastRefresh: null };
 var cacheLoading = false;
 var cacheCallbacks = [];
 
+// Türkçe karakterleri ÖNCE değiştir, sonra toLowerCase — İ.toLowerCase() = 'i̇' (2 karakter) olur
 function toSlug(str) {
-  return (str || '').toLowerCase()
-    .replace(/ı/g, 'i').replace(/İ/g, 'i')
-    .replace(/ş/g, 's').replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u').replace(/ö/g, 'o')
-    .replace(/ç/g, 'c').replace(/\s+/g, '-');
+  return (str || '')
+    .replace(/İ/g, 'i')   // İ → i
+    .replace(/ı/g, 'i')   // ı → i
+    .replace(/[Şş]/g, 's')  // Ş ş → s
+    .replace(/[Ğğ]/g, 'g')  // Ğ ğ → g
+    .replace(/[Üü]/g, 'u')  // Ü ü → u
+    .replace(/[Öö]/g, 'o')  // Ö ö → o
+    .replace(/[Çç]/g, 'c')  // Ç ç → c
+    .toLowerCase()
+    .replace(/\s+/g, '-');
 }
 
 function nosyHeaders(apiKey) {
@@ -77,31 +81,20 @@ async function fetchAllPharmacies(apiKey, date, force) {
   }
 }
 
-// Sonraki güncelleme saatine kadar kalan ms
 function msUntilNextRefresh() {
-  // UTC+3 (Türkiye saati)
-  var now = new Date();
+  var now  = new Date();
   var trNow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
   var trHour = trNow.getUTCHours();
   var trMin  = trNow.getUTCMinutes();
   var trSec  = trNow.getUTCSeconds();
   var trMs   = trNow.getUTCMilliseconds();
-
   var minutesPassed = trHour * 60 + trMin;
-
-  // En yakın sonraki saat
   var nextHour = null;
   for (var i = 0; i < REFRESH_HOURS_TR.length; i++) {
-    if (REFRESH_HOURS_TR[i] * 60 > minutesPassed) {
-      nextHour = REFRESH_HOURS_TR[i];
-      break;
-    }
+    if (REFRESH_HOURS_TR[i] * 60 > minutesPassed) { nextHour = REFRESH_HOURS_TR[i]; break; }
   }
-  // Bu gün kalan saat yoksa yarın 09:00
   if (nextHour === null) nextHour = REFRESH_HOURS_TR[0] + 24;
-
-  var msUntil = (nextHour * 60 - minutesPassed) * 60 * 1000 - trSec * 1000 - trMs;
-  return msUntil;
+  return (nextHour * 60 - minutesPassed) * 60 * 1000 - trSec * 1000 - trMs;
 }
 
 function scheduleNextRefresh(apiKey) {
@@ -109,9 +102,7 @@ function scheduleNextRefresh(apiKey) {
   var nextTime = new Date(Date.now() + ms);
   console.log('[cache] sonraki güncelleme: ' + nextTime.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }));
   setTimeout(function () {
-    fetchAllPharmacies(apiKey, todayISO(), true).then(function () {
-      scheduleNextRefresh(apiKey);
-    });
+    fetchAllPharmacies(apiKey, todayISO(), true).then(function () { scheduleNextRefresh(apiKey); });
   }, ms);
 }
 
@@ -160,17 +151,25 @@ app.get('/api/eczaneler', async function (req, res) {
   }
 });
 
+// Önbellekteki şehir slug'larını gösterir — eşleşme sorunlarını debug etmek için
+app.get('/api/cache-cities', function (req, res) {
+  var counts = {};
+  allCache.data.forEach(function (p) {
+    counts[p.citySlug] = (counts[p.citySlug] || 0) + 1;
+  });
+  res.json({ cities: counts });
+});
+
 app.get('/api/cache-status', function (req, res) {
-  var ms   = msUntilNextRefresh();
-  var next = new Date(Date.now() + ms);
+  var ms = msUntilNextRefresh();
   res.json({
-    cacheDate:   allCache.date,
-    lastRefresh: allCache.lastRefresh,
-    today:       todayISO(),
-    totalRows:   allCache.data.length,
-    isToday:     allCache.date === todayISO(),
+    cacheDate:    allCache.date,
+    lastRefresh:  allCache.lastRefresh,
+    today:        todayISO(),
+    totalRows:    allCache.data.length,
+    isToday:      allCache.date === todayISO(),
     refreshHours: REFRESH_HOURS_TR,
-    nextRefresh: next.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
+    nextRefresh:  new Date(Date.now() + ms).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
     nextRefreshMs: ms
   });
 });
