@@ -101,12 +101,18 @@
 
     var mapsUrl, mapSrc;
     if (lat && lng) {
+      var fLat = parseFloat(lat), fLng = parseFloat(lng);
+      // OpenStreetMap embed (no API key, no iframe restrictions)
+      mapSrc  = 'https://www.openstreetmap.org/export/embed.html'
+              + '?bbox=' + (fLng - 0.005) + ',' + (fLat - 0.005) + ',' + (fLng + 0.005) + ',' + (fLat + 0.005)
+              + '&layer=mapnik&marker=' + fLat + ',' + fLng;
+      // External link still uses Google Maps for navigation
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(lat + ',' + lng);
-      mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(lat + ',' + lng) + '&output=embed&z=16';
     } else {
       var q = (address || name);
+      mapSrc  = 'https://www.openstreetmap.org/export/embed.html?bbox=28.97,41.00,29.10,41.12&layer=mapnik'
+              + '&query=' + encodeURIComponent(q);
       mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q);
-      mapSrc  = 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed&z=16';
     }
 
     if (extLink) extLink.href = mapsUrl;
