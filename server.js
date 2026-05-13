@@ -43,10 +43,7 @@ var demoPharmacies = [
 ];
 
 function nosyHeaders(apiKey) {
-  return {
-    'Authorization': 'Bearer ' + apiKey,
-    'Accept': 'application/json'
-  };
+  return { 'Authorization': 'Bearer ' + apiKey, 'Accept': 'application/json' };
 }
 
 function nosyFetch(apiKey, il, ilce, tarih) {
@@ -161,33 +158,37 @@ app.get('/api/test-nosyapi', async function(req, res) {
   var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
 
-  var il    = (req.query.il || 'istanbul').trim();
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
+  var hdrs = nosyHeaders(apiKey);
 
-  async function tryUrl(url, headers) {
+  async function tryUrl(url) {
     try {
-      var r = await fetch(url, { headers: headers || { 'Accept': 'application/json' } });
+      var r = await fetch(url, { headers: hdrs });
       var text = await r.text();
       var parsed = null;
       try { parsed = JSON.parse(text); } catch(e) {}
-      var firstRow = null;
-      if (parsed) {
-        var rows = parsed.data || parsed.payload || parsed.result || parsed;
-        if (Array.isArray(rows) && rows.length > 0) firstRow = rows[0];
-      }
-      return { status: r.status, isHtml: text.trim().startsWith('<'), firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 300) };
+      var rows = parsed && (parsed.data || parsed.result || parsed.payload);
+      var firstRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+      return {
+        status: r.status,
+        rowCount: parsed && parsed.rowCount,
+        firstRowKeys: firstRow ? Object.keys(firstRow) : null,
+        firstRow: firstRow,
+        raw: text.slice(0, 400)
+      };
     } catch(e) { return { error: e.message }; }
   }
 
-  var bearerHeaders = nosyHeaders(apiKey);
-  var mainUrl = NOSY_BASE + 'pharmacies-on-duty?il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
-  var checkUrl = NOSY_BASE + 'pharmacies-on-duty/status';
+  var citiesUrl   = NOSY_BASE + 'pharmacies-on-duty/cities';
+  var istanbulTR  = NOSY_BASE + 'pharmacies-on-duty?il=' + encodeURIComponent('İstanbul') + '&tarih=' + encodeURIComponent(tarih);
+  var istanbulEN  = NOSY_BASE + 'pharmacies-on-duty?il=istanbul&tarih=' + encodeURIComponent(tarih);
+  var istanbulUP  = NOSY_BASE + 'pharmacies-on-duty?il=ISTANBUL&tarih=' + encodeURIComponent(tarih);
 
   res.json({
-    keyLength: apiKey.length,
-    status_endpoint: await tryUrl(checkUrl, bearerHeaders),
-    pharmacies_bearer: await tryUrl(mainUrl, bearerHeaders),
-    pharmacies_queryparam: await tryUrl(mainUrl + '&apikey=' + encodeURIComponent(apiKey))
+    cities_sample: await tryUrl(citiesUrl),
+    istanbul_tr:   await tryUrl(istanbulTR),
+    istanbul_en:   await tryUrl(istanbulEN),
+    istanbul_upper: await tryUrl(istanbulUP)
   });
 });
 
