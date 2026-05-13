@@ -77,15 +77,17 @@ app.get('/api/eczaneler', async function(req, res) {
     var json = await r.json();
 
     var pharmacies = [];
-    if (json && json.data && Array.isArray(json.data)) {
-      pharmacies = json.data.map(function(p) {
+    var rows = (json && (json.data || json.payload || json.result)) || [];
+    if (!Array.isArray(rows) && json && Array.isArray(json)) rows = json;
+    if (Array.isArray(rows)) {
+      pharmacies = rows.map(function(p) {
         return {
-          name:    p.eczaneAdi    || p.name    || '',
-          dist:    p.ilce         || p.dist    || '',
-          address: p.adres        || p.address || '',
-          phone:   p.telefon      || p.phone   || '',
-          lat:     p.enlem        || p.latitude  || p.lat || '',
-          lng:     p.boylam       || p.longitude || p.lng || ''
+          name:    p.EczaneAdi    || p.eczaneAdi    || p.name    || '',
+          dist:    p.Ilce         || p.ilce         || p.dist    || '',
+          address: p.Adres        || p.adres        || p.address || '',
+          phone:   p.Telefon      || p.telefon      || p.phone   || '',
+          lat:     p.Enlem        || p.enlem        || p.latitude  || p.lat || '',
+          lng:     p.Boylam       || p.boylam       || p.longitude || p.lng || ''
         };
       });
     }
@@ -163,7 +165,12 @@ app.get('/api/test-nosyapi', async function(req, res) {
     var text = await r.text();
     var parsed = null;
     try { parsed = JSON.parse(text); } catch(e) {}
-    res.json({ status: r.status, url: apiUrl.replace(apiKey, '***'), raw: text.slice(0, 1000), parsed: parsed });
+    var firstRow = null;
+    if (parsed) {
+      var rows = parsed.data || parsed.payload || parsed.result || parsed;
+      if (Array.isArray(rows) && rows.length > 0) firstRow = rows[0];
+    }
+    res.json({ status: r.status, url: apiUrl.replace(apiKey, '***'), firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 500) });
   } catch(err) {
     res.json({ error: err.message });
   }
