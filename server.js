@@ -16,6 +16,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 var pharmacyCache = new Map();
 var CACHE_TTL = 60 * 60 * 1000;
 
+var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
+
 function getDateInfo() {
   var now = new Date();
   var daysT = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -40,14 +42,35 @@ var demoPharmacies = [
   { name: 'HAYAT ECZANESİ',  dist: 'MERKEZ', address: 'Yıldız Mah. Gül Sok. No:3',      phone: '0312 555 77 88', lat: '', lng: '' }
 ];
 
+function nosyHeaders(apiKey) {
+  return {
+    'Authorization': 'Bearer ' + apiKey,
+    'Accept': 'application/json'
+  };
+}
+
 function nosyFetch(apiKey, il, ilce, tarih) {
-  var apiUrl = 'https://www.nosyapi.com/api/nobetci-eczane'
+  var url = NOSY_BASE + 'pharmacies-on-duty'
     + '?apikey=' + encodeURIComponent(apiKey)
     + '&il=' + encodeURIComponent(il);
-  if (ilce) apiUrl += '&ilce=' + encodeURIComponent(ilce);
-  apiUrl += '&tarih=' + encodeURIComponent(tarih);
-  return fetch(apiUrl, {
-    headers: { 'Accept': 'application/json' }
+  if (ilce) url += '&ilce=' + encodeURIComponent(ilce);
+  url += '&tarih=' + encodeURIComponent(tarih);
+  return fetch(url, { headers: { 'Accept': 'application/json' } });
+}
+
+function parsePharmacies(json) {
+  var rows = (json && (json.data || json.payload || json.result)) || [];
+  if (!Array.isArray(rows) && Array.isArray(json)) rows = json;
+  if (!Array.isArray(rows)) return [];
+  return rows.map(function(p) {
+    return {
+      name:    p.EczaneAdi    || p.eczaneAdi    || p.name    || '',
+      dist:    p.Ilce         || p.ilce         || p.dist    || '',
+      address: p.Adres        || p.adres        || p.address || '',
+      phone:   p.Telefon      || p.telefon      || p.phone   || '',
+      lat:     p.Enlem        || p.enlem        || p.latitude  || p.lat || '',
+      lng:     p.Boylam       || p.boylam       || p.longitude || p.lng || ''
+    };
   });
 }
 
@@ -73,30 +96,14 @@ app.get('/api/eczaneler', async function(req, res) {
 
   try {
     var r = await nosyFetch(apiKey, il, ilce, tarih);
+    var text = await r.text();
 
-    if (!r.ok) {
-      var errText = await r.text();
-      return res.status(r.status).json({ error: 'API hatası: ' + r.status, detail: errText.slice(0, 200) });
+    var json;
+    try { json = JSON.parse(text); } catch(e) {
+      return res.status(502).json({ error: 'API JSON döndürmedi', raw: text.slice(0, 200) });
     }
 
-    var json = await r.json();
-
-    var pharmacies = [];
-    var rows = (json && (json.data || json.payload || json.result)) || [];
-    if (!Array.isArray(rows) && json && Array.isArray(json)) rows = json;
-    if (Array.isArray(rows)) {
-      pharmacies = rows.map(function(p) {
-        return {
-          name:    p.EczaneAdi    || p.eczaneAdi    || p.name    || '',
-          dist:    p.Ilce         || p.ilce         || p.dist    || '',
-          address: p.Adres        || p.adres        || p.address || '',
-          phone:   p.Telefon      || p.telefon      || p.phone   || '',
-          lat:     p.Enlem        || p.enlem        || p.latitude  || p.lat || '',
-          lng:     p.Boylam       || p.boylam       || p.longitude || p.lng || ''
-        };
-      });
-    }
-
+    var pharmacies = parsePharmacies(json);
     pharmacyCache.set(cacheKey, { data: pharmacies, ts: Date.now() });
     res.json({ pharmacies: pharmacies });
   } catch (err) {
@@ -160,35 +167,35 @@ app.get('/api/test-nosyapi', async function(req, res) {
   var il    = (req.query.il || 'istanbul').trim();
   var tarih = req.query.tarih || new Date().toISOString().split('T')[0];
 
-  var base = 'https://www.nosyapi.com/api/nobetci-eczane';
-  var urlWithKey   = base + '?apikey=' + encodeURIComponent(apiKey) + '&il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
-  var urlWithoutKey = base + '?il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
-
-  async function tryFetch(url, headers) {
+  async function tryUrl(url) {
     try {
-      var r = await fetch(url, { headers: headers || { 'Accept': 'application/json' } });
+      var r = await fetch(url, { headers: { 'Accept': 'application/json' } });
       var text = await r.text();
       var parsed = null;
       try { parsed = JSON.parse(text); } catch(e) {}
-      return { status: r.status, isHtml: text.trim().startsWith('<'), parsed: parsed, raw: text.slice(0, 200) };
-    } catch(e) {
-      return { error: e.message };
-    }
+      var firstRow = null;
+      if (parsed) {
+        var rows = parsed.data || parsed.payload || parsed.result || parsed;
+        if (Array.isArray(rows) && rows.length > 0) firstRow = rows[0];
+      }
+      return { status: r.status, isHtml: text.trim().startsWith('<'), firstRowKeys: firstRow ? Object.keys(firstRow) : null, firstRow: firstRow, raw: text.slice(0, 300) };
+    } catch(e) { return { error: e.message }; }
   }
 
-  var results = {};
-  results.keyLength = apiKey.length;
-  results.keyPreview = apiKey.slice(0, 6) + '...' + apiKey.slice(-4);
-  results.method1_queryParam = await tryFetch(urlWithKey);
-  results.method2_bearer = await tryFetch(urlWithoutKey, { 'Authorization': 'Bearer ' + apiKey, 'Accept': 'application/json' });
+  var checkUrl = NOSY_BASE + 'nosy-service/check?apikey=' + encodeURIComponent(apiKey);
+  var mainUrl  = NOSY_BASE + 'pharmacies-on-duty?apikey=' + encodeURIComponent(apiKey) + '&il=' + encodeURIComponent(il) + '&tarih=' + encodeURIComponent(tarih);
 
-  res.json(results);
+  res.json({
+    keyLength: apiKey.length,
+    check: await tryUrl(checkUrl),
+    pharmacies: await tryUrl(mainUrl)
+  });
 });
 
 app.get('/debug-env', function(req, res) {
   var key = (process.env.NOSYAPI_KEY || '').trim();
   res.json({
-    NOSYAPI_KEY: key ? 'VAR (' + key.length + ' karakter, ilk6: ' + key.slice(0,6) + ')' : 'YOK',
+    NOSYAPI_KEY: key ? 'VAR (' + key.length + ' karakter)' : 'YOK',
     PORT: PORT
   });
 });
