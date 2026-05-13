@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
 
-// { 'istanbul|2026-05-13': { data: [...], ts: Date } }
+// { 'istanbul|2026-05-13|h9': [...] }
 var cityCache = new Map();
 
 function toSlug(str) {
@@ -46,7 +46,6 @@ function parseRow(p) {
 
 function todayISO() { return new Date().toISOString().split('T')[0]; }
 
-// Mevcut Türkiye saatinde olması gereken son güncelleme saatini döndür
 function lastRefreshHour() {
   var now = new Date();
   var trHour = new Date(now.getTime() + 3 * 60 * 60 * 1000).getUTCHours();
@@ -54,7 +53,7 @@ function lastRefreshHour() {
   for (var i = 0; i < REFRESH_HOURS_TR.length; i++) {
     if (REFRESH_HOURS_TR[i] <= trHour) last = REFRESH_HOURS_TR[i];
   }
-  return last; // null = henüz hiç güncelleme olmadı
+  return last;
 }
 
 async function getCityPharmacies(apiKey, citySlug, distSlug, date) {
@@ -64,6 +63,10 @@ async function getCityPharmacies(apiKey, citySlug, distSlug, date) {
 
   var url = NOSY_BASE + 'pharmacies-on-duty?city=' + encodeURIComponent(citySlug) + '&date=' + encodeURIComponent(date);
   var r    = await fetch(url, { headers: nosyHeaders(apiKey) });
+  if (!r.ok) {
+    var errText = await r.text();
+    throw new Error('NosyAPI ' + r.status + ': ' + errText.slice(0, 200));
+  }
   var json = await r.json();
   var rows = (json && json.data) || [];
   var parsed = Array.isArray(rows) ? rows.map(parseRow) : [];
@@ -89,9 +92,8 @@ function scheduleNextRefresh() {
   var ms = msUntilNextRefresh();
   console.log('[cache] temizleme: ' + new Date(Date.now() + ms).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }));
   setTimeout(function () {
-    // Güncelleme saatinde cache'i temizle — bir sonraki istek fresh veri çeker
     cityCache.clear();
-    console.log('[cache] temizlendi, yeni güncelleme saatinde fresh veri çekilecek');
+    console.log('[cache] temizlendi');
     scheduleNextRefresh();
   }, ms);
 }
@@ -114,8 +116,8 @@ function getDateInfo() {
 var demoPharmacies = [
   { name:'MERKEZ ECZANESİ',  dist:'MERKEZ', address:'Atatürk Cad. No:15',            phone:'0312 555 11 22', lat:'', lng:'' },
   { name:'SAĞLIK ECZANESİ', dist:'MERKEZ', address:'Cumhuriyet Mah. 123 Sok. No:5', phone:'0312 555 33 44', lat:'', lng:'' },
-  { name:'GÜVEN ECZANESİ',  dist:'MERKEZ', address:'İstiklal Cad. No:42',          phone:'0312 555 55 66', lat:'', lng:'' },
-  { name:'HAYAT ECZANESİ',  dist:'MERKEZ', address:'Yıldız Mah. Gül Sok. No:3', phone:'0312 555 77 88', lat:'', lng:'' }
+  { name:'GÜVEN ECZANESİ',  dist:'MERKEZ', address:'İstiklal Cad. No:42',           phone:'0312 555 55 66', lat:'', lng:'' },
+  { name:'HAYAT ECZANESİ',  dist:'MERKEZ', address:'Yıldız Mah. Gül Sok. No:3',     phone:'0312 555 77 88', lat:'', lng:'' }
 ];
 
 app.get('/api/eczaneler', async function (req, res) {
@@ -130,6 +132,7 @@ app.get('/api/eczaneler', async function (req, res) {
     if (distSlug) pharmacies = pharmacies.filter(function (p) { return p.distSlug === distSlug; });
     res.json({ pharmacies: pharmacies });
   } catch (err) {
+    console.error('[api/eczaneler] ' + err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -145,6 +148,35 @@ app.get('/api/cache-status', function (req, res) {
     refreshHours:  REFRESH_HOURS_TR,
     currentTRHour: new Date(new Date().getTime() + 3*60*60*1000).getUTCHours()
   });
+});
+
+// Diagnostic: test NosyAPI call for a specific city directly
+app.get('/api/test-city', async function (req, res) {
+  var apiKey = (process.env.NOSYAPI_KEY || '').trim();
+  if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
+  var city = (req.query.city || 'istanbul').trim();
+  var date = (req.query.date || todayISO()).trim();
+  var url  = NOSY_BASE + 'pharmacies-on-duty?city=' + encodeURIComponent(city) + '&date=' + encodeURIComponent(date);
+  try {
+    var r    = await fetch(url, { headers: nosyHeaders(apiKey) });
+    var text = await r.text();
+    var json = null;
+    try { json = JSON.parse(text); } catch(e) {}
+    var rows = json && json.data;
+    var firstRow = Array.isArray(rows) && rows.length > 0 ? rows[0] : null;
+    res.json({
+      status:      r.status,
+      city:        city,
+      date:        date,
+      url:         url,
+      rowCount:    Array.isArray(rows) ? rows.length : null,
+      firstRowKeys: firstRow ? Object.keys(firstRow) : null,
+      firstRow:    firstRow,
+      rawSlice:    text.slice(0, 400)
+    });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
 });
 
 app.get('/nobetci-:slug', function (req, res, next) {
