@@ -44,7 +44,7 @@
         html += '<li class="w-item">';
         html += '<span class="w-name">' + esc(p.name) + '</span>';
         if(p.address) html += '<span class="w-addr">' + esc(p.address) + '</span>';
-        if(p.phone) html += '<span class="w-phone"><a href="tel:' + esc(p.phone.replace(/\s/g,'')) + '">&#9990; ' + esc(p.phone) + '</a></span>';
+        if(p.phone) html += '<span class="w-phone"><a href="tel:' + esc(p.phone.replace(/\s/g,'')) + '">☎ ' + esc(p.phone) + '</a></span>';
         html += '</li>';
       });
       html += '</ul>';

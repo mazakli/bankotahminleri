@@ -16,7 +16,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
 
-// { 'istanbul|2026-05-13|h9': [...] }
 var cityCache = new Map();
 
 function toSlug(str) {
