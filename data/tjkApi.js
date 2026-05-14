@@ -94,33 +94,44 @@ function num(v) { return parseFloat(v) || 0; }
 function intVal(v) { return parseInt(v) || 0; }
 
 function normalizeAt(at, idx) {
+  // TJK gerçek alanlar: NO, AD, KILO, JOKEYADI, ANTRENORADI, BABA, ANNE, SAHIPADI, SON6, AGF1, GANYAN
+  var agfRaw = str(at.AGF1 || at.agf || at.AGF || '0').replace(',', '.');
+  var agfVal = parseFloat(agfRaw) || 0;
   return {
-    no:       intVal(at.AtNo || at.atNo || at.no || at.sira) || (idx + 1),
-    ad:       str(at.AtAdi || at.atAdi || at.ad || at.name || at.AtAdı),
-    kilo:     intVal(at.Kilo || at.kilo || at.Agirlik || at.agirlik || at.Siklet || at.siklet),
-    jokey:    str(at.JokeyAdi || at.jokeyAdi || at.Jokey || at.jokey || at.JokeyAdı),
-    antrenor: str(at.AntrenorAdi || at.antrenorAdi || at.Antrenor || at.antrenor || at.AntrenörAdı),
-    baba:     str(at.BabaAdi || at.babaAdi || at.Baba || at.baba),
-    anne:     str(at.AnneAdi || at.anneAdi || at.Anne || at.anne),
-    sahibi:   str(at.SahibiAdi || at.sahibiAdi || at.Sahip || at.sahip || at.Owner),
-    son5:     str(at.Son5 || at.son5 || at.SonDerece || at.sonDerece || at.Galibiyet),
-    agf:      num(at.AGF || at.agf || at.AgfOrani || at.agfOrani || at.Agf),
+    no:       intVal(at.NO || at.AtNo || at.atNo || at.no) || (idx + 1),
+    ad:       str(at.AD || at.AtAdi || at.atAdi || at.ad),
+    kilo:     num(at.KILO || at.Kilo || at.kilo),
+    jokey:    str(at.JOKEYADI || at.JokeyAdi || at.jokeyAdi || at.jokey),
+    antrenor: str(at.ANTRENORADI || at.AntrenorAdi || at.antrenorAdi || at.antrenor),
+    baba:     str(at.BABA || at.BabaAdi || at.babaAdi || at.baba),
+    anne:     str(at.ANNE || at.AnneAdi || at.anneAdi || at.anne),
+    sahibi:   str(at.SAHIPADI || at.SahibiAdi || at.sahibiAdi || at.sahip),
+    son5:     str(at.SON6 || at.Son5 || at.son5 || at.SonDerece || ''),
+    agf:      agfVal,
+    ganyan:   str(at.GANYAN || at.ganyan || ''),
   };
 }
 
 function normalizeKosu(kosu, idx) {
-  var atlar = kosu.Atlar || kosu.atlar || kosu.Deklareler || kosu.deklareler || kosu.Horses || kosu.horses || [];
+  // TJK gerçek alanlar: NO, SAAT, MESAFE, PISTADI_TR, GRUP_TR, CINSDETAY_TR, CINSIYET, ikramiyeler, atlar
+  var atlar = kosu.atlar || kosu.Atlar || kosu.Deklareler || kosu.deklareler || [];
+  var ikramiyeler = kosu.ikramiyeler || [];
+  var ikramiye1 = str(ikramiyeler[0] || '');
+  // "595.000,00" → 595000
+  var ikramiyeInt = ikramiye1 ? parseInt(ikramiye1.replace(/\./g, '').replace(',', '.')) : 0;
+  var ikramiyeStr = ikramiye1 ? ikramiye1.split(',')[0].replace(/\./g, '') + ' TL' : '-';
+
   return {
-    no:          intVal(kosu.KosuNo || kosu.kosuNo || kosu.No || kosu.no || kosu.Sira) || (idx + 1),
-    saat:        str(kosu.BaslangicSaati || kosu.baslangicSaati || kosu.Saat || kosu.saat || kosu.Time),
-    mesafe:      intVal(kosu.Mesafe || kosu.mesafe || kosu.Distance),
-    pist:        str(kosu.PistCinsi || kosu.pistCinsi || kosu.Pist || kosu.pist || kosu.Zemin || kosu.zemin),
-    yas:         str(kosu.YasGrubu || kosu.yasGrubu || kosu.Yas || kosu.yas || kosu.Age),
-    cins:        str(kosu.CinsiyetTuru || kosu.cinsiyetTuru || kosu.Cins || kosu.cins),
-    ikramiye:    intVal(kosu.Ikramiye || kosu.ikramiye || kosu.Prize),
-    ikramiyeStr: str(kosu.IkramiyeStr || kosu.ikramiyeStr) || (intVal(kosu.Ikramiye || kosu.ikramiye || 0).toLocaleString('tr-TR') + ' TL'),
+    no:          intVal(kosu.NO || kosu.KosuNo || kosu.kosuNo || kosu.no) || (idx + 1),
+    saat:        str(kosu.SAAT || kosu.BaslangicSaati || kosu.saat),
+    mesafe:      intVal(kosu.MESAFE || kosu.Mesafe || kosu.mesafe),
+    pist:        str(kosu.PISTADI_TR || kosu.PistCinsi || kosu.pist || kosu.PIST),
+    yas:         str(kosu.GRUP_TR || kosu.YasGrubu || kosu.yas),
+    cins:        str(kosu.CINSDETAY_TR || kosu.CINSIYET || kosu.cins || ''),
+    ikramiye:    ikramiyeInt,
+    ikramiyeStr: ikramiyeStr,
     atSayisi:    atlar.length,
-    atlar:       atlar.map(normalizeAt),
+    atlar:       atlar.filter(function(a) { return !a.KOSMAZ; }).map(normalizeAt),
   };
 }
 
