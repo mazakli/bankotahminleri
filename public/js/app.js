@@ -45,6 +45,11 @@
       if (p.dist) addressHtml += '<div class="text-muted small mb-1"><i class="fa-solid fa-map-pin me-1"></i>' + esc(p.dist) + '</div>';
       addressHtml += '<div>' + esc(p.address || '—') + '</div>';
 
+      var nameHtml = esc(p.name);
+      if (window.PAGE_ILSLUG && p.distSlug) {
+        nameHtml = '<a href="/nobetci-' + esc(window.PAGE_ILSLUG) + '-' + esc(p.distSlug) + '" class="text-danger text-decoration-none fw-semibold">' + esc(p.name) + '</a>';
+      }
+
       var btn = document.createElement('button');
       btn.className = 'btn-directions';
       btn.innerHTML = '<i class="fa-solid fa-diamond-turn-right me-1"></i>Yol Tarifi';
@@ -58,7 +63,7 @@
 
       tr.innerHTML =
         '<td class="text-muted small">' + (idx + 1) + '</td>' +
-        '<td><div class="pharmacy-name">' + esc(p.name) + '</div></td>' +
+        '<td><div class="pharmacy-name">' + nameHtml + '</div></td>' +
         '<td class="pharmacy-address">' + addressHtml + '</td>' +
         '<td class="pharmacy-phone">' +
           (p.phone
@@ -217,11 +222,28 @@
         resultEl.textContent = '';
         window.showDirections(nearest.name, nearest.address, nearest.lat, nearest.lng);
       },
-      function () {
+      function (err) {
         if (btnEl) btnEl.disabled = false;
-        resultEl.textContent = 'Konum izni verilmedi veya alınamadı.';
+        var ua = navigator.userAgent;
+        var isChrome  = /Chrome/.test(ua) && !/Edg/.test(ua);
+        var isEdge    = /Edg/.test(ua);
+        var isFirefox = /Firefox/.test(ua);
+        var isSafari  = /Safari/.test(ua) && !/Chrome/.test(ua);
+        var hint = '';
+        if (err.code === 1) {
+          if (isChrome)       hint = ' Chrome: adres çubuğundaki kilit simgesi → Konum → İzin ver → Sayfayı yenile.';
+          else if (isEdge)    hint = ' Edge: adres çubuğundaki kilit → Konum → İzin ver → Sayfayı yenile.';
+          else if (isFirefox) hint = ' Firefox: adres çubuğundaki kilide tıklayın → Konum izni verin → Sayfayı yenile.';
+          else if (isSafari)  hint = ' Safari: Tercihler → Web Siteleri → Konum → Bu site için "İzin Ver".';
+          else                hint = ' Tarayıcı ayarlarından bu site için konum iznini etkinleştirin.';
+          resultEl.innerHTML = '<i class="fa-solid fa-location-slash me-1 text-warning"></i>Konum izni reddedildi.' + hint;
+        } else if (err.code === 2) {
+          resultEl.innerHTML = '<i class="fa-solid fa-wifi-exclamation me-1 text-warning"></i>Konumunuz belirlenemedi. GPS veya Wi-Fi bağlantınızı kontrol edip tekrar deneyin.';
+        } else {
+          resultEl.innerHTML = '<i class="fa-solid fa-clock me-1 text-warning"></i>Konum alınamadı (zaman aşımı). Tekrar deneyin.';
+        }
       },
-      { timeout: 8000, maximumAge: 60000 }
+      { timeout: 12000, maximumAge: 60000, enableHighAccuracy: false }
     );
   };
 
