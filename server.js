@@ -93,7 +93,12 @@ function parseRow(p) {
   };
 }
 
-function todayISO() { return new Date().toISOString().split('T')[0]; }
+// Türkiye saatiyle (UTC+3) şimdiki zamanı döner
+function trNow() {
+  return new Date(Date.now() + 3 * 60 * 60 * 1000);
+}
+
+function todayISO() { return trNow().toISOString().split('T')[0]; }
 
 function lastRefreshHour() {
   var now = new Date();
@@ -148,13 +153,13 @@ function scheduleNextRefresh() {
 }
 
 function getDateInfo() {
-  var now = new Date();
+  var now    = trNow(); // Türkiye saati
   var daysT  = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
   var months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  var fmt = function (d) { return d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+' '+daysT[d.getDay()]; };
+  var fmt = function (d) { return d.getUTCDate()+' '+months[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+daysT[d.getUTCDay()]; };
   var iso = function (d) { return d.toISOString().split('T')[0]; };
-  var y = new Date(now); y.setDate(now.getDate()-1);
-  var t = new Date(now); t.setDate(now.getDate()+1);
+  var y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  var t = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   return {
     dun:   { label: fmt(y),   iso: iso(y) },
     bugun: { label: fmt(now), iso: iso(now) },

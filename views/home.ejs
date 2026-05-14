@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/css/style.css">
   <script type="application/ld+json">
-  [{"@context":"https://schema.org","@type":"WebSite","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.724eczane.com/nobetci-{search_term_string}"},"query-input":"required name=search_term_string"}},{"@context":"https://schema.org","@type":"Organization","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","logo":{"@type":"ImageObject","url":"https://www.724eczane.com/favicon.svg"}}]
+  [{"@context":"https://schema.org","@type":"WebSite","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://www.724eczane.com/nobetci-{search_term_string}"},"query-input":"required name=search_term_string"}},{"@context":"https://schema.org","@type":"Organization","name":"724eczane.com","url":"https://www.724eczane.com","description":"Türkiye'nin 81 ilindeki nöbetçi eczanelerini anında bulun.","logo":{"@type":"ImageObject","url":"https://www.724eczane.com/favicon.svg"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Nöbetçi eczane listesi ne zaman güncelleniyor?","acceptedAnswer":{"@type":"Answer","text":"Veriler her gün saat 09:00, 12:00, 15:00, 17:00 ve 19:00'da (Türkiye saatiyle) otomatik olarak güncellenir. Yetkili API kaynağından anlık çekilen veriler, son güncelleme saatine göre önbelleğe alınır."}},{"@type":"Question","name":"En yakın nöbetçi eczaneyi nasıl bulabilirim?","acceptedAnswer":{"@type":"Answer","text":"İl veya ilçe sayfasına gidip 'En Yakın Eczaneyi Bul' butonuna tıklayın. Tarayıcınız konum izni isteyecektir; izin verdiğinizde size en yakın nöbetçi eczane ve harita üzerinde yol tarifi otomatik olarak gösterilir."}},{"@type":"Question","name":"Gece yarısı açık nöbetçi eczane var mı?","acceptedAnswer":{"@type":"Answer","text":"Nöbetçi eczaneler genellikle sabah 09:00'dan ertesi sabah 09:00'a kadar 24 saat açık olup hafta sonu ve resmi tatillerde de hizmet verir. Sayfadaki 'Bugün' sekmesinden güncel nöbetçi eczane listesine ulaşabilirsiniz."}},{"@type":"Question","name":"Nöbetçi eczane bilgileri güvenilir mi?","acceptedAnswer":{"@type":"Answer","text":"724eczane.com, Türkiye Eczacılar Birliği verilerini kullanan yetkili API sağlayıcısından beslenmektedir. Tüm eczane bilgileri resmi kaynaklardan otomatik alınır; herhangi bir manuel müdahale yapılmaz."}}]}]
   </script>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -108,6 +108,73 @@
         <div class="info-card p-4 rounded-3">
           <h3 class="h5 fw-bold mb-2"><i class="fa-solid fa-clock-rotate-left me-2 text-warning"></i>Nöbet Saatleri</h3>
           <p class="text-muted small mb-0">Nöbetçi eczaneler genellikle saat <strong>09:00 – 09:00</strong> (24 saat) hizmet verir. Tatil ve hafta sonu nöbetleri farklılık gösterebilir.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 faq-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="h4 fw-bold text-danger mb-4">
+          <i class="fa-solid fa-circle-question me-2"></i>Sıkça Sorulan Sorular
+        </h2>
+        <div class="accordion" id="faqAccordion">
+
+          <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                Nöbetçi eczane listesi ne zaman güncelleniyor?
+              </button>
+            </h3>
+            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Veriler her gün Türkiye saatiyle <strong>09:00, 12:00, 15:00, 17:00 ve 19:00</strong>'da otomatik olarak güncellenir. Yetkili API kaynağından anlık çekilen veriler, son güncelleme saatine göre önbelleğe alınır. Bu sayede gereksiz tekrarlı API çağrısı yapılmaz ve sayfa her zaman hızlı yüklenir.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                En yakın nöbetçi eczaneyi nasıl bulabilirim?
+              </button>
+            </h3>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                İl veya ilçe sayfasına gidip <strong>"En Yakın Eczaneyi Bul"</strong> butonuna tıklayın. Tarayıcınız konum izni isteyecektir; izin verdiğinizde bulunduğunuz noktaya en yakın nöbetçi eczane ve harita üzerinde yol tarifi otomatik olarak gösterilir. Konum verisi yalnızca tarayıcınızda işlenir, sunucuya iletilmez.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border mb-2 rounded-2 overflow-hidden">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                Gece yarısı açık nöbetçi eczane var mı?
+              </button>
+            </h3>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Nöbetçi eczaneler genellikle sabah <strong>09:00'dan ertesi sabah 09:00'a kadar 24 saat</strong> açık olup hafta sonu ve resmi tatillerde de hizmet verir. Sayfadaki "Bugün" sekmesinden güncel nöbetçi eczane listesine ulaşabilirsiniz. Gece açık eczane sorgulama için ilinizi seçip listeyi inceleyin.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item border rounded-2 overflow-hidden">
+            <h3 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                Nöbetçi eczane bilgileri güvenilir mi?
+              </button>
+            </h3>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                724eczane.com, Türkiye Eczacılar Birliği verilerini kullanan yetkili API sağlayıcısından beslenmektedir. Tüm eczane bilgileri resmi kaynaklardan otomatik alınır; herhangi bir manuel müdahale yapılmaz. Veriler güncel ve doğru olmakla birlikte, acil durumlarda <strong>182 Alo Sağlık</strong> hattını aramanız önerilir.
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
