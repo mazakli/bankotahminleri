@@ -174,6 +174,43 @@ var demoPharmacies = [
   { name:'HAYAT ECZANESİ',  dist:'MERKEZ', address:'Yıldız Mah. Gül Sok. No:3',     phone:'0312 555 77 88', lat:'', lng:'' }
 ];
 
+// ── At Yarışı Sayfaları ──────────────────────────────────────────────
+var yarislar = require('./data/yarislar');
+
+function trToday() {
+  return new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split('T')[0];
+}
+
+app.get('/program', function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var data = yarislar.getMockBulten(tarih);
+  res.render('program', { data: data, tarih: tarih, title: 'Günlük Yarış Programı | bankotahminleri.com', description: 'Bugünkü at yarışı programı, koşu bilgileri ve at listesi.' });
+});
+
+app.get('/bulten', function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var data = yarislar.getMockBulten(tarih);
+  res.render('bulten', { data: data, tarih: tarih, title: 'Günlük Yarış Bülteni | bankotahminleri.com', description: 'Bugünkü at yarışı bülteni, jokey ve antrenör bilgileri.' });
+});
+
+app.get('/agf', function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var data = yarislar.getMockAGF(tarih);
+  res.render('agf', { data: data, tarih: tarih, title: 'AGF Tablosu | bankotahminleri.com', description: 'Anlaşmalı Ganyan Fiyatları (AGF) tablosu.' });
+});
+
+app.get('/sonuclar', function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var data = yarislar.getMockSonuclar(tarih);
+  res.render('sonuclar', { data: data, tarih: tarih, title: 'Yarış Sonuçları | bankotahminleri.com', description: 'At yarışı sonuçları ve ikramiye bilgileri.' });
+});
+
+app.get('/kupon', function (req, res) {
+  var tarih = trToday();
+  var data = yarislar.getMockBulten(tarih);
+  res.render('kupon', { data: data, tarih: tarih, title: 'Kupon Yap | bankotahminleri.com', description: 'At yarışı kuponu oluştur, ganyan ve plase seç.' });
+});
+
 app.get('/api/eczaneler', rateLimit(30), async function (req, res) {
   var citySlug = (req.query.il    || '').trim();
   var distSlug = (req.query.ilce  || '').trim();

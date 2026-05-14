@@ -313,4 +313,89 @@ body {
   line-height: 1.7;
 }
 .legal-content ul { padding-left: 1.4rem; }
+
+/* ── Horse Racing Theme ── */
+:root {
+  --hr-green: #1a6b3a;
+  --hr-green-dark: #124d2a;
+  --hr-green-light: #e8f5ec;
+  --hr-gold: #c8a400;
+  --hr-gold-light: #fff8e1;
+  --hr-dark: #1a1a1e;
+}
+
+.bg-hr-green { background-color: var(--hr-green) !important; }
+.text-hr-green { color: var(--hr-green) !important; }
+.text-hr-gold { color: var(--hr-gold) !important; }
+
+/* Navbar */
+.navbar-hr { background-color: var(--hr-green) !important; }
+.navbar-hr .navbar-brand { font-size: 1.2rem; font-weight: 700; }
+.navbar-hr .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 500; }
+.navbar-hr .nav-link:hover { color: #fff !important; background: rgba(255,255,255,0.1); border-radius: 6px; }
+.navbar-hr .nav-link.active { color: var(--hr-gold) !important; }
+
+/* Footer */
+.footer-hr { background: var(--hr-dark); color: #adb5bd; }
+.footer-hr .footer-link { color: #adb5bd; text-decoration: none; font-size: 0.875rem; }
+.footer-hr .footer-link:hover { color: var(--hr-gold); }
+
+/* Race cards */
+.race-card { border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+.race-card-header { background: var(--hr-green); color: #fff; padding: 0.75rem 1rem; }
+.race-card-header .race-no { background: rgba(255,255,255,0.2); border-radius: 50%; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+
+/* Horse table */
+.horse-table th { background: #f8f9fa; font-size: 0.78rem; text-transform: uppercase; color: #6c757d; }
+.horse-table td { font-size: 0.875rem; vertical-align: middle; }
+.horse-table tr:hover { background: var(--hr-green-light); }
+.horse-no { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: var(--hr-dark); color: #fff; border-radius: 4px; font-weight: 700; font-size: 0.85rem; }
+
+/* AGF badges */
+.agf-hot { color: #198754; font-weight: 700; }
+.agf-warm { color: #fd7e14; font-weight: 600; }
+.agf-cold { color: #6c757d; }
+.badge-favori { background: var(--hr-gold); color: #1a1a1e; font-size: 0.7rem; }
+
+/* Hippodrome tabs */
+.hipodromo-tabs .nav-link { color: var(--hr-dark); border-radius: 8px 8px 0 0; }
+.hipodromo-tabs .nav-link.active { background: var(--hr-green); color: #fff; border-color: var(--hr-green); }
+
+/* Payout card */
+.payout-card { border: 2px solid var(--hr-gold); border-radius: 8px; background: var(--hr-gold-light); }
+.payout-card .payout-item { border-bottom: 1px solid rgba(200,164,0,0.3); padding: 0.5rem 0; }
+.payout-card .payout-label { font-size: 0.8rem; color: #6c757d; text-transform: uppercase; }
+.payout-card .payout-val { font-weight: 700; color: var(--hr-dark); }
+
+/* Coupon builder */
+.kupon-panel { position: sticky; top: 80px; }
+.kupon-panel .card { border: 2px solid var(--hr-green); }
+.kupon-panel .card-header { background: var(--hr-green); color: #fff; }
+.kupon-item { border-bottom: 1px solid #dee2e6; padding: 0.5rem 0; }
+.kupon-item .remove-btn { cursor: pointer; color: #dc3545; }
+
+/* Horse selection cards */
+.at-kart { border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.at-kart:hover { border-color: var(--hr-green); background: var(--hr-green-light); }
+.at-kart.secili { border-color: var(--hr-green); background: var(--hr-green-light); }
+.at-kart .at-no-badge { width: 36px; height: 36px; background: var(--hr-dark); color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+/* Results */
+.sonuc-1 { background: #fff8e1; font-weight: 700; }
+.sonuc-2 { background: #f8f9fa; }
+.sonuc-3 { background: #f8f9fa; }
+.derece-badge { background: #e9ecef; border-radius: 4px; padding: 2px 8px; font-size: 0.8rem; font-family: monospace; }
+
+/* Page hero */
+.hr-hero { background: linear-gradient(135deg, var(--hr-green) 0%, var(--hr-green-dark) 100%); padding: 2rem 0; }
+.hr-hero h1 { font-size: 1.8rem; font-weight: 700; }
+
+/* Date picker */
+.tarih-picker { background: #fff; border: 2px solid var(--hr-green); border-radius: 8px; padding: 1rem; }
+.tarih-btn { border: 2px solid var(--hr-green); color: var(--hr-green); border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; text-decoration: none; display: inline-block; }
+.tarih-btn:hover, .tarih-btn.active { background: var(--hr-green); color: #fff; }
+
+/* Accordion koşu */
+.kosu-accordion .accordion-button { font-weight: 600; }
+.kosu-accordion .accordion-button:not(.collapsed) { background: var(--hr-green-light); color: var(--hr-green); }
 .legal-content li { margin-bottom: 0.4rem; }

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<%- include('partials/hr-navbar') %>
+
+<!-- Hero -->
+<section class="hr-hero text-white">
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+      <div>
+        <h1 class="mb-1">
+          <i class="fa-solid fa-newspaper me-2"></i>Günlük Yarış Bülteni
+        </h1>
+        <p class="mb-0 opacity-75">
+          <i class="fa-regular fa-calendar me-1"></i><%= tarih %> — Jokey, antrenör, soy kütüğü ve AGF bilgileri
+        </p>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="#" class="btn btn-warning btn-sm" onclick="window.print(); return false;">
+          <i class="fa-solid fa-download me-1"></i>Bülten İndir
+        </a>
+        <a href="/kupon?tarih=<%= tarih %>" class="btn btn-outline-light btn-sm">
+          <i class="fa-solid fa-ticket me-1"></i>Kupon Yap
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container py-4">
+
+  <!-- Hippodrome Tabs -->
+  <ul class="nav nav-tabs hipodromo-tabs mb-4" id="hipTabs" role="tablist">
+    <% data.forEach(function(hip, idx) { %>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link <%= idx === 0 ? 'active' : '' %>"
+        id="tab-<%= hip.id %>"
+        data-bs-toggle="tab" data-bs-target="#pane-<%= hip.id %>"
+        type="button" role="tab">
+        <i class="fa-solid fa-location-dot me-1"></i><%= hip.kisa %>
+      </button>
+    </li>
+    <% }) %>
+  </ul>
+
+  <div class="tab-content" id="hipTabContent">
+    <% data.forEach(function(hip, hipIdx) { %>
+    <div class="tab-pane fade <%= hipIdx === 0 ? 'show active' : '' %>" id="pane-<%= hip.id %>" role="tabpanel">
+
+      <h4 class="text-hr-green fw-bold mb-4">
+        <i class="fa-solid fa-horse me-2"></i><%= hip.ad %>
+      </h4>
+
+      <% hip.kosular.forEach(function(kosu) {
+        var minAgf = Math.min.apply(null, kosu.atlar.map(function(a){ return a.agf; }));
+        var favoriAt = kosu.atlar.find(function(a){ return a.agf === minAgf; });
+      %>
+      <!-- Race Card -->
+      <div class="race-card">
+        <div class="race-card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="d-flex align-items-center gap-3">
+            <span class="race-no"><%= kosu.no %></span>
+            <div>
+              <span class="fw-bold fs-6"><%= kosu.no %>. KOŞU — <%= kosu.saat %></span>
+              <div style="font-size:0.82rem; opacity:0.85;">
+                <%= kosu.mesafe %>m <%= kosu.pist %> |
+                <%= kosu.yas %> | <%= kosu.cins %>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge" style="background:#c8a400; color:#1a1a1e; font-size:0.85rem;">
+              <i class="fa-solid fa-trophy me-1"></i><%= kosu.ikramiyeStr %>
+            </span>
+            <span class="badge bg-secondary"><%= kosu.atSayisi %> At</span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table horse-table mb-0">
+            <thead>
+              <tr>
+                <th style="width:45px;">No</th>
+                <th>At Adı</th>
+                <th style="width:60px;">Kilo</th>
+                <th>Jokey</th>
+                <th>Antrenör</th>
+                <th>Baba</th>
+                <th>Anne</th>
+                <th>Sahibi</th>
+                <th style="width:80px;">Son 5</th>
+                <th style="width:70px;">AGF</th>
+                <th style="width:110px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% kosu.atlar.forEach(function(at) {
+                var isFavori = at.agf === minAgf;
+              %>
+              <tr class="<%= isFavori ? 'table-warning' : '' %>">
+                <td>
+                  <span class="horse-no"><%= at.no %></span>
+                </td>
+                <td>
+                  <strong><%= at.ad %></strong>
+                  <% if (isFavori) { %>
+                  <span class="badge badge-favori ms-1">
+                    <i class="fa-solid fa-star me-1"></i>FAVORİ
+                  </span>
+                  <% } %>
+                </td>
+                <td class="text-center"><%= at.kilo %></td>
+                <td><%= at.jokey %></td>
+                <td><%= at.antrenor %></td>
+                <td class="text-muted" style="font-size:0.8rem;"><%= at.baba %></td>
+                <td class="text-muted" style="font-size:0.8rem;"><%= at.anne %></td>
+                <td class="text-muted" style="font-size:0.8rem; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= at.sahibi %></td>
+                <td>
+                  <span class="text-muted" style="font-size:0.8rem; letter-spacing:1px;"><%= at.son5 %></span>
+                </td>
+                <td>
+                  <strong class="<%= at.agf < 3 ? 'agf-hot' : at.agf <= 6 ? 'text-warning' : at.agf <= 12 ? 'agf-warm' : 'agf-cold' %>">
+                    <%= at.agf %>
+                  </strong>
+                </td>
+                <td>
+                  <a href="/kupon?tarih=<%= tarih %>&hip=<%= hip.id %>&kosu=<%= kosu.no %>&at=<%= at.no %>"
+                     class="btn btn-sm" style="background:var(--hr-green); color:#fff; font-size:0.75rem;">
+                    <i class="fa-solid fa-plus me-1"></i>Kupona Ekle
+                  </a>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Favori summary -->
+        <div class="px-3 py-2" style="background:#f8f9fa; border-top:1px solid #dee2e6; font-size:0.8rem;">
+          <i class="fa-solid fa-star text-warning me-1"></i>
+          <strong>Favori:</strong> #<%= favoriAt.no %> <%= favoriAt.ad %>
+          (AGF: <%= favoriAt.agf %> | Jokey: <%= favoriAt.jokey %>)
+        </div>
+      </div>
+      <% }) %>
+
+    </div>
+    <% }) %>
+  </div>
+
+</div>
+
+<%- include('partials/hr-footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

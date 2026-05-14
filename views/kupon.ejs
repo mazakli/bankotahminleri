@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<%- include('partials/hr-navbar') %>
+
+<!-- Hero -->
+<section class="hr-hero text-white">
+  <div class="container">
+    <h1 class="mb-1">
+      <i class="fa-solid fa-ticket me-2"></i>Kupon Yap
+    </h1>
+    <p class="mb-0 opacity-75">
+      <i class="fa-regular fa-calendar me-1"></i><%= tarih %> — At seçin, kupon oluşturun, tahmini kazancınızı görün
+    </p>
+  </div>
+</section>
+
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- LEFT: Race selection -->
+    <div class="col-lg-8">
+
+      <!-- Bet type tabs -->
+      <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header" style="background:var(--hr-green); color:#fff;">
+          <h5 class="mb-0"><i class="fa-solid fa-list-check me-2"></i>Bahis Türü</h5>
+        </div>
+        <div class="card-body pb-2">
+          <ul class="nav nav-tabs border-0" id="betTypeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="ganyan-tab" data-bs-toggle="tab" data-bs-target="#ganyanPane" type="button" data-bet-type="ganyan">
+                Ganyan
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="plase-tab" data-bs-toggle="tab" data-bs-target="#plasePane" type="button" data-bet-type="plase">
+                Plase
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="cifte-tab" data-bs-toggle="tab" data-bs-target="#ciftePane" type="button" data-bet-type="cifte">
+                Çifte
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="surpriz-tab" data-bs-toggle="tab" data-bs-target="#surprizPane" type="button" data-bet-type="surpriz">
+                Sürpriz
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="ikili-tab" data-bs-toggle="tab" data-bs-target="#ikiliPane" type="button" data-bet-type="ikili">
+                Günlük İkili
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="uclu-tab" data-bs-toggle="tab" data-bs-target="#ucluPane" type="button" data-bet-type="uclu">
+                Üçlü
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Selectors -->
+      <div class="card mb-4 border shadow-sm">
+        <div class="card-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold" style="font-size:0.875rem;">
+                <i class="fa-solid fa-location-dot me-1 text-hr-green"></i>Hipodrom
+              </label>
+              <select class="form-select" id="hipSelect">
+                <% data.forEach(function(hip) { %>
+                <option value="<%= hip.id %>"><%= hip.ad %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold" style="font-size:0.875rem;">
+                <i class="fa-solid fa-horse me-1 text-hr-green"></i>Koşu
+              </label>
+              <select class="form-select" id="kosuSelect">
+                <!-- populated by JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Horse list -->
+          <div id="atListesi" class="row g-2">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Bet type info -->
+      <div class="card border-0" style="background:#f8f9fa;">
+        <div class="card-body">
+          <h6 class="fw-bold mb-2">
+            <i class="fa-solid fa-circle-info me-2 text-hr-green"></i>Bahis Türü Bilgisi
+          </h6>
+          <div id="betTypeInfo" style="font-size:0.875rem; color:#6c757d;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Coupon panel -->
+    <div class="col-lg-4">
+      <div class="kupon-panel">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fa-solid fa-ticket me-2"></i>Kuponum
+            </h5>
+            <span class="badge bg-warning text-dark" id="secilenSayiBadge">0 At</span>
+          </div>
+          <div class="card-body p-0">
+
+            <!-- Selected horses list -->
+            <div id="kuponListesi" style="min-height:100px; padding:0.75rem;">
+              <p class="text-muted text-center py-3 mb-0" id="boshMesaj" style="font-size:0.875rem;">
+                <i class="fa-solid fa-horse fa-2x d-block mb-2" style="color:#dee2e6;"></i>
+                Henüz at seçilmedi.<br>Sol taraftan at ekleyin.
+              </p>
+            </div>
+
+            <div style="border-top:1px solid #dee2e6; padding:0.75rem;">
+              <!-- Bet amount -->
+              <div class="mb-3">
+                <label class="form-label fw-bold" style="font-size:0.8rem;">
+                  <i class="fa-solid fa-turkish-lira-sign me-1"></i>Bahis Tutarı
+                </label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">₺</span>
+                  <input type="number" id="bahisTutari" class="form-control"
+                    value="2.00" min="2" step="1">
+                  <span class="input-group-text">TL</span>
+                </div>
+                <div class="d-flex gap-1 mt-2">
+                  <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setBahis(2)">2</button>
+                  <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setBahis(5)">5</button>
+                  <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setBahis(10)">10</button>
+                  <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setBahis(20)">20</button>
+                </div>
+              </div>
+
+              <!-- Estimated return -->
+              <div class="mb-3 p-2 rounded" style="background:var(--hr-green-light); border:1px solid #c3e6cb;">
+                <div style="font-size:0.78rem; color:#6c757d;">Tahmini Kazanç</div>
+                <div id="tahminiKazanc" class="fw-bold" style="font-size:1.2rem; color:var(--hr-green);">
+                  — TL
+                </div>
+                <div id="carpimInfo" style="font-size:0.72rem; color:#6c757d;"></div>
+              </div>
+
+              <!-- Buttons -->
+              <button id="hesaplaBtn" class="btn w-100 mb-2 text-white"
+                style="background:var(--hr-green);"
+                onclick="hesapla()">
+                <i class="fa-solid fa-calculator me-1"></i>Hesapla
+              </button>
+
+              <button class="btn btn-outline-danger w-100 mb-2"
+                style="font-size:0.875rem;"
+                onclick="kuponuTemizle()">
+                <i class="fa-solid fa-trash me-1"></i>Kuponu Temizle
+              </button>
+
+              <button class="btn w-100 text-white"
+                style="background:#c8a400; font-size:0.875rem;"
+                data-bs-toggle="modal" data-bs-target="#tjkModal">
+                <i class="fa-solid fa-external-link-alt me-1"></i>Kupon Oyna
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TJK Modal -->
+<div class="modal fade" id="tjkModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--hr-green); color:#fff;">
+        <h5 class="modal-title">
+          <i class="fa-solid fa-horse me-2"></i>TJK'da Oyna
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <div style="font-size:3rem; margin-bottom:1rem;">🐎</div>
+        <p class="fw-bold fs-5 mb-2">TJK hesabınızdan oynayabilirsiniz</p>
+        <p class="text-muted" style="font-size:0.875rem;">
+          bankotahminleri.com bir tahmin platformudur. Gerçek bahis oynamak için
+          Türkiye Jokey Kulübü'nün resmi sitesini veya mobil uygulamasını kullanın.
+        </p>
+        <div class="d-flex gap-2 justify-content-center mt-3">
+          <a href="https://www.tjk.org" target="_blank" rel="noopener"
+             class="btn text-white" style="background:var(--hr-green);">
+            <i class="fa-solid fa-external-link-alt me-1"></i>TJK.org
+          </a>
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Kapat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/hr-footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── All race data embedded ──────────────────────────────────────────
+var TUMU_DATA = <%- JSON.stringify(data) %>;
+var tarih = '<%= tarih %>';
+
+// ── State ──────────────────────────────────────────────────────────
+var kupon = {};       // { "istanbul-3-5": { hipId, kosuNo, atNo, atAd, agf, jokey }, ... }
+var aktifBetType = 'ganyan';
+
+// Bet type rules: maxPerRace = max horses per race, maxRaces = max races in coupon
+var BET_RULES = {
+  ganyan:  { maxPerRace: 1,  maxRaces: 1,  label: 'Ganyan',        desc: 'Tek koşuda birinci gelen atı bilme. 1 koşu, 1 at seçilir.' },
+  plase:   { maxPerRace: 1,  maxRaces: 1,  label: 'Plase',         desc: 'Tek koşuda ilk 3\'e giren atı bilme. 1 koşu, 1 at seçilir.' },
+  cifte:   { maxPerRace: 2,  maxRaces: 2,  label: 'Çifte',         desc: '2 ayrı koşuda birincileri bilme. Her koşu için 1 at seçilir.' },
+  surpriz: { maxPerRace: 3,  maxRaces: 2,  label: 'Sürpriz',       desc: '2 ayrı koşuda birincileri bilme. Her koşu için 1-3 at seçilebilir.' },
+  ikili:   { maxPerRace: 3,  maxRaces: 3,  label: 'Günlük İkili',  desc: '3 ayrı koşuda birincileri bilme. Her koşu için 1-3 at seçilebilir.' },
+  uclu:    { maxPerRace: 4,  maxRaces: 3,  label: 'Üçlü',          desc: '3 ayrı koşuda ilk 3\'ü doğru sırayla bilme. Her koşu için 1-4 at.' }
+};
+
+// ── Build key ──────────────────────────────────────────────────────
+function makeKey(hipId, kosuNo, atNo) {
+  return hipId + '-' + kosuNo + '-' + atNo;
+}
+
+// ── Get currently selected hippodrome data ─────────────────────────
+function getHipData() {
+  var hipId = document.getElementById('hipSelect').value;
+  return TUMU_DATA.find(function(h) { return h.id === hipId; });
+}
+
+function getKosuData() {
+  var hip = getHipData();
+  if (!hip) return null;
+  var kosuNo = parseInt(document.getElementById('kosuSelect').value, 10);
+  return hip.kosular.find(function(k) { return k.no === kosuNo; });
+}
+
+// ── Populate kosu dropdown ─────────────────────────────────────────
+function populateKosuDropdown() {
+  var hip = getHipData();
+  var sel = document.getElementById('kosuSelect');
+  sel.innerHTML = '';
+  if (!hip) return;
+  hip.kosular.forEach(function(k) {
+    var opt = document.createElement('option');
+    opt.value = k.no;
+    opt.textContent = k.no + '. Koşu — ' + k.saat + ' | ' + k.mesafe + 'm ' + k.pist;
+    sel.appendChild(opt);
+  });
+  renderAtListesi();
+}
+
+// ── Render horse cards ─────────────────────────────────────────────
+function renderAtListesi() {
+  var kosu = getKosuData();
+  var hip  = getHipData();
+  var container = document.getElementById('atListesi');
+  if (!kosu || !hip) { container.innerHTML = ''; return; }
+
+  var minAgf = Math.min.apply(null, kosu.atlar.map(function(a) { return a.agf; }));
+
+  container.innerHTML = kosu.atlar.map(function(at) {
+    var key = makeKey(hip.id, kosu.no, at.no);
+    var secili = !!kupon[key];
+    var agfClass = at.agf < 3 ? 'agf-hot' : at.agf <= 6 ? 'text-warning' : at.agf <= 12 ? 'agf-warm' : 'agf-cold';
+    var isFavori = at.agf === minAgf;
+    return [
+      '<div class="col-6 col-md-4">',
+        '<div class="at-kart p-2 h-100 ' + (secili ? 'secili' : '') + '" id="kart-' + key + '">',
+          '<div class="d-flex align-items-center gap-2 mb-1">',
+            '<div class="at-no-badge">' + at.no + '</div>',
+            '<div>',
+              '<div class="fw-bold" style="font-size:0.82rem; line-height:1.2;">' + at.ad + '</div>',
+              isFavori ? '<span class="badge badge-favori" style="font-size:0.6rem;">FAVORİ</span>' : '',
+            '</div>',
+          '</div>',
+          '<div class="text-muted" style="font-size:0.75rem; margin-bottom:4px;">',
+            '<i class="fa-solid fa-user me-1"></i>' + at.jokey,
+          '</div>',
+          '<div class="d-flex justify-content-between align-items-center">',
+            '<small class="text-muted">' + at.kilo + ' kg</small>',
+            '<strong class="' + agfClass + '">' + at.agf + '</strong>',
+          '</div>',
+          '<button class="btn btn-sm w-100 mt-2 ' + (secili ? 'btn-success' : 'btn-outline-secondary') + '"',
+            ' style="font-size:0.75rem;"',
+            ' onclick="toggleAt(\'' + hip.id + '\',' + kosu.no + ',' + at.no + ',\'' + at.ad.replace(/'/g,"\\'") + '\',' + at.agf + ',\'' + at.jokey.replace(/'/g,"\\'") + '\')"',
+          '>',
+            secili
+              ? '<i class="fa-solid fa-check me-1"></i>Eklendi'
+              : '<i class="fa-solid fa-plus me-1"></i>Ekle',
+          '</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+  }).join('');
+}
+
+// ── Toggle horse in coupon ─────────────────────────────────────────
+function toggleAt(hipId, kosuNo, atNo, atAd, agf, jokey) {
+  var key = makeKey(hipId, kosuNo, atNo);
+  var rule = BET_RULES[aktifBetType];
+
+  if (kupon[key]) {
+    // Remove
+    delete kupon[key];
+  } else {
+    // Check race limit
+    var raceKey = hipId + '-' + kosuNo;
+    var inThisRace = Object.values(kupon).filter(function(s) {
+      return s.hipId === hipId && s.kosuNo === kosuNo;
+    });
+    if (inThisRace.length >= rule.maxPerRace) {
+      showToast('Bu koşu için en fazla ' + rule.maxPerRace + ' at seçebilirsiniz (' + rule.label + ').');
+      return;
+    }
+    // Check races limit
+    var races = {};
+    Object.values(kupon).forEach(function(s) { races[s.hipId + '-' + s.kosuNo] = true; });
+    if (!races[raceKey] && Object.keys(races).length >= rule.maxRaces) {
+      showToast('Bu bahis türü için en fazla ' + rule.maxRaces + ' koşu seçebilirsiniz (' + rule.label + ').');
+      return;
+    }
+    kupon[key] = { hipId: hipId, kosuNo: kosuNo, atNo: atNo, atAd: atAd, agf: agf, jokey: jokey };
+  }
+
+  saveKupon();
+  renderAtListesi();
+  renderKuponPanel();
+}
+
+// ── Render coupon panel ────────────────────────────────────────────
+function renderKuponPanel() {
+  var listesi = document.getElementById('kuponListesi');
+  var bosh = document.getElementById('boshMesaj');
+  var badge = document.getElementById('secilenSayiBadge');
+  var keys = Object.keys(kupon);
+
+  badge.textContent = keys.length + ' At';
+
+  if (keys.length === 0) {
+    listesi.innerHTML = '';
+    var p = document.createElement('p');
+    p.className = 'text-muted text-center py-3 mb-0';
+    p.id = 'boshMesaj';
+    p.style.fontSize = '0.875rem';
+    p.innerHTML = '<i class="fa-solid fa-horse fa-2x d-block mb-2" style="color:#dee2e6;"></i>Henüz at seçilmedi.<br>Sol taraftan at ekleyin.';
+    listesi.appendChild(p);
+    document.getElementById('tahminiKazanc').textContent = '— TL';
+    document.getElementById('carpimInfo').textContent = '';
+    return;
+  }
+
+  // Group by race
+  var byRace = {};
+  keys.forEach(function(k) {
+    var s = kupon[k];
+    var rk = s.hipId + '-' + s.kosuNo;
+    if (!byRace[rk]) byRace[rk] = { hipId: s.hipId, kosuNo: s.kosuNo, atlar: [] };
+    byRace[rk].atlar.push(s);
+  });
+
+  var html = '';
+  Object.values(byRace).forEach(function(race) {
+    var hipObj = TUMU_DATA.find(function(h) { return h.id === race.hipId; });
+    var kosuObj = hipObj ? hipObj.kosular.find(function(k) { return k.no === race.kosuNo; }) : null;
+    var label = hipObj ? hipObj.kisa : race.hipId;
+    html += '<div class="mb-2">';
+    html += '<div class="fw-bold" style="font-size:0.78rem; color:#6c757d; text-transform:uppercase;">';
+    html += label + ' · ' + race.kosuNo + '. Koşu';
+    if (kosuObj) html += ' · ' + kosuObj.saat;
+    html += '</div>';
+    race.atlar.forEach(function(at) {
+      var k = makeKey(at.hipId, at.kosuNo, at.atNo);
+      html += '<div class="kupon-item d-flex align-items-center justify-content-between">';
+      html += '<div>';
+      html += '<span class="badge me-1" style="background:var(--hr-dark); font-size:0.75rem;">#' + at.atNo + '</span>';
+      html += '<span style="font-size:0.82rem;">' + at.atAd + '</span>';
+      html += '<div style="font-size:0.72rem; color:#6c757d;">' + at.jokey + ' · AGF: ' + at.agf + '</div>';
+      html += '</div>';
+      html += '<span class="remove-btn" onclick="kuponSil(\'' + k + '\')" title="Kaldır">';
+      html += '<i class="fa-solid fa-times"></i></span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  listesi.innerHTML = html;
+  hesapla();
+}
+
+// ── Remove from coupon ─────────────────────────────────────────────
+function kuponSil(key) {
+  delete kupon[key];
+  saveKupon();
+  renderAtListesi();
+  renderKuponPanel();
+}
+
+// ── Clear coupon ───────────────────────────────────────────────────
+function kuponuTemizle() {
+  kupon = {};
+  saveKupon();
+  renderAtListesi();
+  renderKuponPanel();
+}
+
+// ── Calculate estimated return ─────────────────────────────────────
+function hesapla() {
+  var keys = Object.keys(kupon);
+  if (keys.length === 0) {
+    document.getElementById('tahminiKazanc').textContent = '— TL';
+    document.getElementById('carpimInfo').textContent = '';
+    return;
+  }
+  var bahis = parseFloat(document.getElementById('bahisTutari').value) || 2;
+  var agfProduct = 1;
+  var agfList = [];
+  keys.forEach(function(k) {
+    agfProduct *= kupon[k].agf;
+    agfList.push(kupon[k].agf);
+  });
+  // Rough estimate: bahis * agf product * house cut (0.75)
+  var tahmini = (bahis * agfProduct * 0.75).toFixed(2);
+  document.getElementById('tahminiKazanc').textContent = parseFloat(tahmini).toLocaleString('tr-TR') + ' TL';
+  document.getElementById('carpimInfo').textContent =
+    '(' + agfList.join(' × ') + ' × ' + bahis + ' TL × 0.75)';
+}
+
+function setBahis(val) {
+  document.getElementById('bahisTutari').value = val;
+  hesapla();
+}
+
+// ── LocalStorage ───────────────────────────────────────────────────
+function saveKupon() {
+  try { localStorage.setItem('kupon_' + tarih, JSON.stringify(kupon)); } catch(e) {}
+}
+
+function loadKupon() {
+  try {
+    var stored = localStorage.getItem('kupon_' + tarih);
+    if (stored) kupon = JSON.parse(stored);
+  } catch(e) { kupon = {}; }
+}
+
+// ── Toast notification ─────────────────────────────────────────────
+function showToast(msg) {
+  var existing = document.getElementById('kuponToast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.id = 'kuponToast';
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;max-width:320px;';
+  t.innerHTML = [
+    '<div class="alert alert-warning d-flex align-items-center gap-2 shadow mb-0">',
+      '<i class="fa-solid fa-triangle-exclamation"></i>',
+      '<span style="font-size:0.875rem;">' + msg + '</span>',
+      '<button type="button" class="btn-close ms-auto btn-sm" onclick="this.closest(\'#kuponToast\').remove()"></button>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(t);
+  setTimeout(function() { if (t.parentNode) t.remove(); }, 3500);
+}
+
+// ── Bet type info text ─────────────────────────────────────────────
+function updateBetTypeInfo() {
+  var rule = BET_RULES[aktifBetType];
+  document.getElementById('betTypeInfo').innerHTML =
+    '<i class="fa-solid fa-circle-info me-1 text-hr-green"></i>' + rule.desc;
+}
+
+// ── Event listeners ────────────────────────────────────────────────
+document.getElementById('hipSelect').addEventListener('change', populateKosuDropdown);
+document.getElementById('kosuSelect').addEventListener('change', renderAtListesi);
+document.getElementById('bahisTutari').addEventListener('input', hesapla);
+
+// Bet type tabs
+document.querySelectorAll('#betTypeTabs .nav-link').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    aktifBetType = this.dataset.betType;
+    kuponuTemizle();
+    updateBetTypeInfo();
+  });
+});
+
+// ── Init ───────────────────────────────────────────────────────────
+loadKupon();
+populateKosuDropdown();
+renderKuponPanel();
+updateBetTypeInfo();
+
+// Handle URL params (from Kupona Ekle links)
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var hipParam  = params.get('hip');
+  var kosuParam = params.get('kosu');
+  if (hipParam) {
+    var hipSel = document.getElementById('hipSelect');
+    hipSel.value = hipParam;
+    populateKosuDropdown();
+  }
+  if (kosuParam) {
+    var kosuSel = document.getElementById('kosuSelect');
+    kosuSel.value = kosuParam;
+    renderAtListesi();
+  }
+})();
+</script>
+</body>
+</html>
