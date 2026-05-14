@@ -1,0 +1,54 @@
+<%
+  // Turkish date display
+  var _navMonths = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var _navDays   = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  var _navNow    = new Date(Date.now() + 3 * 60 * 60 * 1000);
+  var _navDate   = _navNow.getUTCDate() + ' ' + _navMonths[_navNow.getUTCMonth()] + ' ' + _navNow.getUTCFullYear();
+  var _navGun    = _navDays[_navNow.getUTCDay()];
+  var _path      = typeof locals !== 'undefined' && locals.reqPath ? locals.reqPath : '';
+%>
+<nav class="navbar navbar-expand-lg navbar-hr sticky-top shadow-sm" style="background-color: #1a6b3a !important;">
+  <div class="container">
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-2" href="/program">
+      <span style="font-size:1.4rem;">🐎</span>
+      <span style="font-size:1.1rem; letter-spacing:-0.3px;">bankotahminleri.com</span>
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#hrNavbar" aria-controls="hrNavbar" aria-expanded="false" aria-label="Menüyü Aç">
+      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="hrNavbar">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 rounded" href="/program">
+            <i class="fa-solid fa-calendar-days me-1"></i> Yarış Programı
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 rounded" href="/bulten">
+            <i class="fa-solid fa-newspaper me-1"></i> Günlük Bülten
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 rounded" href="/agf">
+            <i class="fa-solid fa-chart-bar me-1"></i> AGF Tablosu
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 rounded" href="/sonuclar">
+            <i class="fa-solid fa-trophy me-1"></i> Yarış Sonuçları
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link px-3 py-2 rounded position-relative" href="/kupon">
+            <i class="fa-solid fa-ticket me-1"></i> Kupon Yap
+            <span class="badge ms-1 rounded-pill" style="background:#dc3545; font-size:0.6rem; vertical-align:middle;">YENİ</span>
+          </a>
+        </li>
+      </ul>
+      <div class="d-flex align-items-center">
+        <span class="text-white-50 me-1" style="font-size:0.78rem;"><i class="fa-regular fa-calendar me-1"></i>Bugün:</span>
+        <span class="text-white fw-semibold" style="font-size:0.82rem;"><%= _navGun %>, <%= _navDate %></span>
+      </div>
+    </div>
+  </div>
+</nav>
