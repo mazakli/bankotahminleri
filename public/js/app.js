@@ -77,19 +77,6 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  function initDayTabs() {
-    var tabs = document.querySelectorAll('.day-tab');
-    tabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        tabs.forEach(function (t) { t.classList.remove('active'); });
-        tab.classList.add('active');
-        if (window.PAGE_ILSLUG) {
-          loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', tab.getAttribute('data-date'));
-        }
-      });
-    });
-  }
-
   window.showDirections = function (name, address, lat, lng) {
     var nameEl  = $('modalPharmacyName');
     var extLink = $('mapsExternalLink');
@@ -277,13 +264,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    initDayTabs();
     initTableSearch();
     initHomeSearch();
-    if (window.PAGE_ILSLUG) {
-      var activeTab = document.querySelector('.day-tab.active');
-      var date = activeTab ? activeTab.getAttribute('data-date') : '';
-      if (date) loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', date);
+    if (window.PAGE_ILSLUG && window.PAGE_TODAY) {
+      loadPharmacies(window.PAGE_ILSLUG, window.PAGE_ILCESLUG || '', window.PAGE_TODAY);
     }
   });
 
