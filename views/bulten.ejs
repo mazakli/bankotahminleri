@@ -100,20 +100,21 @@
         </div>
 
         <div class="table-responsive">
-          <table class="table horse-table mb-0">
+          <table class="table horse-table mb-0" style="font-size:0.83rem;">
             <thead>
               <tr>
-                <th style="width:45px;">No</th>
+                <th style="width:36px;">No</th>
                 <th>At Adı</th>
-                <th style="width:60px;">Kilo</th>
+                <th style="width:36px;" title="Yaş">Yaş</th>
+                <th style="width:46px;" title="Kilo">Kilo</th>
                 <th>Jokey</th>
-                <th>Antrenör</th>
-                <th>Baba</th>
-                <th>Anne</th>
-                <th>Sahibi</th>
-                <th style="width:80px;">Son 5</th>
-                <th style="width:70px;">AGF</th>
-                <th style="width:110px;"></th>
+                <th>Sahip / Antr.</th>
+                <th style="width:34px;" title="Renk/Kılvı">Klv</th>
+                <th style="width:80px;" title="Son 10 Yarış">Son 10</th>
+                <th style="width:40px;" title="Handikap">Hnd</th>
+                <th style="width:50px;" title="Son 20 yarışta galibiyet/ikinci">G/S20</th>
+                <th style="width:58px;">AGF</th>
+                <th style="width:90px;"></th>
               </tr>
             </thead>
             <tbody>
@@ -125,22 +126,29 @@
                   <span class="horse-no"><%= at.no %></span>
                 </td>
                 <td>
-                  <strong><%= at.ad %></strong>
+                  <div class="fw-semibold"><%= at.ad %></div>
                   <% if (isFavori) { %>
-                  <span class="badge badge-favori ms-1">
+                  <span class="badge badge-favori" style="font-size:0.65rem;">
                     <i class="fa-solid fa-star me-1"></i>FAVORİ
                   </span>
                   <% } %>
+                  <div class="text-muted" style="font-size:0.75rem;"><%= at.baba %> × <%= at.anne %></div>
                 </td>
+                <td class="text-center text-muted"><%= at.yas || '-' %></td>
                 <td class="text-center"><%= at.kilo %></td>
-                <td><%= at.jokey %></td>
-                <td><%= at.antrenor %></td>
-                <td class="text-muted" style="font-size:0.8rem;"><%= at.baba %></td>
-                <td class="text-muted" style="font-size:0.8rem;"><%= at.anne %></td>
-                <td class="text-muted" style="font-size:0.8rem; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= at.sahibi %></td>
                 <td>
-                  <span class="text-muted" style="font-size:0.8rem; letter-spacing:1px;"><%= at.son5 %></span>
+                  <div><%= at.jokey %></div>
                 </td>
+                <td>
+                  <div style="font-size:0.8rem;"><%= at.sahibi || '-' %></div>
+                  <div class="text-muted" style="font-size:0.75rem;"><%= at.antrenor %></div>
+                </td>
+                <td class="text-center text-muted"><%= at.renk || '-' %></td>
+                <td>
+                  <span class="text-muted" style="letter-spacing:1px;"><%= at.son5 || '-' %></span>
+                </td>
+                <td class="text-center text-muted"><%= at.handikap || '-' %></td>
+                <td class="text-center text-muted"><%= at.gs20 || '-' %></td>
                 <td>
                   <strong class="<%= at.agf < 3 ? 'agf-hot' : at.agf <= 6 ? 'text-warning' : at.agf <= 12 ? 'agf-warm' : 'agf-cold' %>">
                     <%= at.agf %>
@@ -148,8 +156,8 @@
                 </td>
                 <td>
                   <a href="/kupon?tarih=<%= tarih %>&hip=<%= hip.id %>&kosu=<%= kosu.no %>&at=<%= at.no %>"
-                     class="btn btn-sm" style="background:var(--hr-green); color:#fff; font-size:0.75rem;">
-                    <i class="fa-solid fa-plus me-1"></i>Kupona Ekle
+                     class="btn btn-sm py-0" style="background:var(--hr-green); color:#fff; font-size:0.72rem;">
+                    <i class="fa-solid fa-plus me-1"></i>Kupon
                   </a>
                 </td>
               </tr>

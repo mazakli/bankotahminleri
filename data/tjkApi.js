@@ -100,13 +100,17 @@ function normalizeAt(at, idx) {
   return {
     no:       intVal(at.NO || at.AtNo || at.atNo || at.no) || (idx + 1),
     ad:       str(at.AD || at.AtAdi || at.atAdi || at.ad),
+    yas:      str(at.YAS || at.Yas || at.yas || at.DOGUMYILI || ''),
     kilo:     num(at.KILO || at.Kilo || at.kilo),
     jokey:    str(at.JOKEYADI || at.JokeyAdi || at.jokeyAdi || at.jokey),
     antrenor: str(at.ANTRENORADI || at.AntrenorAdi || at.antrenorAdi || at.antrenor),
+    sahibi:   str(at.SAHIPADI || at.SahibiAdi || at.sahibiAdi || at.sahip),
     baba:     str(at.BABA || at.BabaAdi || at.babaAdi || at.baba),
     anne:     str(at.ANNE || at.AnneAdi || at.anneAdi || at.anne),
-    sahibi:   str(at.SAHIPADI || at.SahibiAdi || at.sahibiAdi || at.sahip),
+    renk:     str(at.RENK || at.Renk || at.renk || at.KLV || ''),
     son5:     str(at.SON6 || at.Son5 || at.son5 || at.SonDerece || ''),
+    handikap: num(at.HANDIKAP || at.Handikap || at.handikap || at.HND || 0),
+    gs20:     str(at.GS20 || at.Gs20 || at.gs20 || at.GALIP20 || ''),
     agf:      agfVal,
     ganyan:   str(at.GANYAN || at.ganyan || ''),
   };

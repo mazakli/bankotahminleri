@@ -9,7 +9,7 @@
 %>
 <nav class="navbar navbar-expand-lg navbar-hr sticky-top shadow-sm" style="background-color: #1a6b3a !important;">
   <div class="container">
-    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-2" href="/program">
+    <a class="navbar-brand text-white fw-bold d-flex align-items-center gap-2" href="/">
       <span style="font-size:1.4rem;">🐎</span>
       <span style="font-size:1.1rem; letter-spacing:-0.3px;">bankotahminleri.com</span>
     </a>
@@ -19,29 +19,42 @@
     <div class="collapse navbar-collapse" id="hrNavbar">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
         <li class="nav-item">
-          <a class="nav-link px-3 py-2 rounded" href="/program">
+          <a class="nav-link px-3 py-2 rounded text-white" href="/program">
             <i class="fa-solid fa-calendar-days me-1"></i> Yarış Programı
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3 py-2 rounded" href="/bulten">
+          <a class="nav-link px-3 py-2 rounded text-white" href="/bulten">
             <i class="fa-solid fa-newspaper me-1"></i> Günlük Bülten
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3 py-2 rounded" href="/agf">
+          <a class="nav-link px-3 py-2 rounded text-white" href="/agf">
             <i class="fa-solid fa-chart-bar me-1"></i> AGF Tablosu
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link px-3 py-2 rounded" href="/sonuclar">
+          <a class="nav-link px-3 py-2 rounded text-white" href="/sonuclar">
             <i class="fa-solid fa-trophy me-1"></i> Yarış Sonuçları
           </a>
         </li>
+        <!-- Kupon Hesaplama Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link px-3 py-2 rounded text-white dropdown-toggle" href="#" id="kuponDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa-solid fa-calculator me-1"></i> Kupon Hesaplama
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="kuponDropdown">
+            <li><a class="dropdown-item" href="/kupon-hesaplama#uclu"><i class="fa-solid fa-3 me-2" style="color:#1a6b3a;"></i>3'lü Ganyan</a></li>
+            <li><a class="dropdown-item" href="/kupon-hesaplama#dorlu"><i class="fa-solid fa-4 me-2" style="color:#1a6b3a;"></i>4'lü Ganyan</a></li>
+            <li><a class="dropdown-item" href="/kupon-hesaplama#besli"><i class="fa-solid fa-5 me-2" style="color:#1a6b3a;"></i>5'li Ganyan</a></li>
+            <li><a class="dropdown-item" href="/kupon-hesaplama#altili"><i class="fa-solid fa-6 me-2" style="color:#1a6b3a;"></i>6'lı Ganyan</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/kupon"><i class="fa-solid fa-ticket me-2" style="color:#dc3545;"></i>Kupon Yap <span class="badge ms-1 rounded-pill" style="background:#dc3545; font-size:0.6rem;">YENİ</span></a></li>
+          </ul>
+        </li>
         <li class="nav-item">
-          <a class="nav-link px-3 py-2 rounded position-relative" href="/kupon">
-            <i class="fa-solid fa-ticket me-1"></i> Kupon Yap
-            <span class="badge ms-1 rounded-pill" style="background:#dc3545; font-size:0.6rem; vertical-align:middle;">YENİ</span>
+          <a class="nav-link px-3 py-2 rounded text-white" href="/veri-bilgisi">
+            <i class="fa-solid fa-circle-info me-1"></i> Veri Bilgisi
           </a>
         </li>
       </ul>

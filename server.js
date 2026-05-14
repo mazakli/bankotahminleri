@@ -500,8 +500,7 @@ app.get('/nobetci-:slug', function (req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  var iller = require('./data/iller');
-  res.render('home', { iller: iller, title: 'Türkiye Nöbetçi Eczane Rehberi | 724eczane.com', description: "Türkiye'nin 81 ilinde nöbetçi eczaneleri anında bulun. İl ve ilçe bazlı güncel nöbetçi eczane listesi — 724eczane.com" });
+  res.render('hr-home', { title: 'bankotahminleri.com — At Yarışı Tahmin & Analiz Platformu', description: "Türkiye'nin at yarışı tahmin ve analiz platformu. TJK programı, AGF tabloları, günlük bülten ve yarış sonuçları." });
 });
 
 app.get('/widget', function (req, res) {
@@ -525,22 +524,27 @@ app.get('/eczane-ekle', function (req, res) {
 });
 
 app.get('/iletisim', function (req, res) {
-  var iller = require('./data/iller');
-  res.render('iletisim', { iller: iller, title: 'İletişim | 724eczane.com', description: '724eczane.com ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.' });
+  res.render('iletisim', { title: 'İletişim | bankotahminleri.com', description: 'bankotahminleri.com ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.' });
 });
 
 app.get('/gizlilik', function (req, res) {
-  var iller = require('./data/iller');
-  res.render('gizlilik', { iller: iller, title: 'Gizlilik Politikası | 724eczane.com', description: '724eczane.com gizlilik politikası. Kişisel verilerinizin nasıl toplandığını ve kullanıldığını öğrenin.' });
+  res.render('gizlilik', { title: 'Gizlilik Politikası | bankotahminleri.com', description: 'bankotahminleri.com gizlilik politikası. Kişisel verilerinizin nasıl toplandığını ve kullanıldığını öğrenin.' });
 });
 
 app.get('/kullanim-kosullari', function (req, res) {
-  var iller = require('./data/iller');
-  res.render('kullanim-kosullari', { iller: iller, title: 'Kullanım Koşulları | 724eczane.com', description: '724eczane.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.' });
+  res.render('kullanim-kosullari', { title: 'Kullanım Koşulları | bankotahminleri.com', description: 'bankotahminleri.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.' });
 });
 
 app.get('/cerez-politikasi', function (req, res) {
-  res.render('cerez-politikasi', { title: 'Çerez Politikası | 724eczane.com', description: '724eczane.com çerez politikası. Sitede kullanılan çerezler ve kişisel veri işleme hakkında bilgi edinin.' });
+  res.render('cerez-politikasi', { title: 'Çerez Politikası | bankotahminleri.com', description: 'bankotahminleri.com çerez politikası. Sitede kullanılan çerezler ve kişisel veri işleme hakkında bilgi edinin.' });
+});
+
+app.get('/veri-bilgisi', function (req, res) {
+  res.render('veri-bilgisi', { title: 'Veri & Bülten Bilgisi | bankotahminleri.com', description: 'bankotahminleri.com veri kaynağı, güncelleme saatleri ve bülten içerikleri hakkında bilgi.' });
+});
+
+app.get('/kupon-hesaplama', function (req, res) {
+  res.render('kupon-hesaplama', { title: 'Kupon Hesaplama | bankotahminleri.com', description: "3'lü, 4'lü, 5'li ve 6'lı ganyan kupon ücretlerini kolayca hesaplayın — bankotahminleri.com" });
 });
 
 app.get('/health',    function (req, res) { res.json({ status: 'ok', time: new Date().toISOString() }); });

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= description %>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<%- include('partials/hr-navbar') %>
+
+<section class="py-4 text-white text-center" style="background:#1a6b3a;">
+  <div class="container">
+    <h1 class="h2 fw-bold mb-2"><i class="fa-solid fa-calculator me-2"></i>Kupon Hesaplama</h1>
+    <p class="mb-0 opacity-75">3'lü, 4'lü, 5'li ve 6'lı ganyan kupon ücretlerini hesaplayın</p>
+  </div>
+</section>
+
+<div class="container py-5">
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="kuponTabs" role="tablist" style="border-bottom: 2px solid #dee2e6;">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold" id="uclu-tab" data-bs-toggle="tab" data-bs-target="#uclu" type="button" role="tab">
+        <i class="fa-solid fa-3 me-1"></i>3'lü Ganyan
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="dorlu-tab" data-bs-toggle="tab" data-bs-target="#dorlu" type="button" role="tab">
+        <i class="fa-solid fa-4 me-1"></i>4'lü Ganyan
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="besli-tab" data-bs-toggle="tab" data-bs-target="#besli" type="button" role="tab">
+        <i class="fa-solid fa-5 me-1"></i>5'li Ganyan
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="altili-tab" data-bs-toggle="tab" data-bs-target="#altili" type="button" role="tab">
+        <i class="fa-solid fa-6 me-1"></i>6'lı Ganyan
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="kuponTabContent">
+
+    <!-- 3'lü Ganyan -->
+    <div class="tab-pane fade show active" id="uclu" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-1">3'lü Ganyan Hesaplama</h5>
+              <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
+              <div id="ucluForm">
+                <% for(var i=1; i<=3; i++){ %>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" style="font-size:0.9rem;"><%= i %>. Koşu — Seçilen At Sayısı</label>
+                  <input type="number" class="form-control kupon-input" data-form="uclu" min="1" max="20" value="1" placeholder="At sayısı">
+                </div>
+                <% } %>
+                <button class="btn w-100 fw-bold mt-2 hesapla-btn" data-form="uclu" style="background:#1a6b3a; color:#fff;">
+                  <i class="fa-solid fa-calculator me-2"></i>Hesapla
+                </button>
+              </div>
+              <div class="result-box mt-4 d-none" id="ucluResult"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
+            <div class="card-body p-4">
+              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>3'lü Ganyan Nedir?</h6>
+              <p style="font-size:0.875rem;" class="text-muted">
+                3'lü ganyan; birbirini takip eden 3 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
+              </p>
+              <ul style="font-size:0.875rem;" class="text-muted">
+                <li class="mb-2">Her koşu için 1 veya daha fazla at seçebilirsiniz.</li>
+                <li class="mb-2">Seçilen at sayısı arttıkça kombinasyon ve kupon bedeli artar.</li>
+                <li class="mb-2">Birim fiyat: <strong>1 TL</strong> (her kombinasyon için)</li>
+                <li>Kupon bedeli = 1. Koşu × 2. Koşu × 3. Koşu</li>
+              </ul>
+              <div class="mt-3 p-3 rounded" style="background:#e8f5ec; font-size:0.875rem;">
+                <strong>Örnek:</strong> Her koşuda 2 at seçerseniz → 2×2×2 = <strong>8 kombinasyon = 8 TL</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4'lü Ganyan -->
+    <div class="tab-pane fade" id="dorlu" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-1">4'lü Ganyan Hesaplama</h5>
+              <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
+              <div id="dorluForm">
+                <% for(var i=1; i<=4; i++){ %>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" style="font-size:0.9rem;"><%= i %>. Koşu — Seçilen At Sayısı</label>
+                  <input type="number" class="form-control kupon-input" data-form="dorlu" min="1" max="20" value="1" placeholder="At sayısı">
+                </div>
+                <% } %>
+                <button class="btn w-100 fw-bold mt-2 hesapla-btn" data-form="dorlu" style="background:#1a6b3a; color:#fff;">
+                  <i class="fa-solid fa-calculator me-2"></i>Hesapla
+                </button>
+              </div>
+              <div class="result-box mt-4 d-none" id="dorluResult"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
+            <div class="card-body p-4">
+              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>4'lü Ganyan Nedir?</h6>
+              <p style="font-size:0.875rem;" class="text-muted">
+                4'lü ganyan; birbirini takip eden 4 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
+              </p>
+              <ul style="font-size:0.875rem;" class="text-muted">
+                <li class="mb-2">Her koşu için 1 veya daha fazla at seçebilirsiniz.</li>
+                <li class="mb-2">Birim fiyat: <strong>1 TL</strong> (her kombinasyon için)</li>
+                <li>Kupon bedeli = Koşu 1 × Koşu 2 × Koşu 3 × Koşu 4</li>
+              </ul>
+              <div class="mt-3 p-3 rounded" style="background:#e8f5ec; font-size:0.875rem;">
+                <strong>Örnek:</strong> 2×2×2×2 = <strong>16 kombinasyon = 16 TL</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5'li Ganyan -->
+    <div class="tab-pane fade" id="besli" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-1">5'li Ganyan Hesaplama</h5>
+              <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
+              <div id="besliForm">
+                <% for(var i=1; i<=5; i++){ %>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" style="font-size:0.9rem;"><%= i %>. Koşu — Seçilen At Sayısı</label>
+                  <input type="number" class="form-control kupon-input" data-form="besli" min="1" max="20" value="1" placeholder="At sayısı">
+                </div>
+                <% } %>
+                <button class="btn w-100 fw-bold mt-2 hesapla-btn" data-form="besli" style="background:#1a6b3a; color:#fff;">
+                  <i class="fa-solid fa-calculator me-2"></i>Hesapla
+                </button>
+              </div>
+              <div class="result-box mt-4 d-none" id="besliResult"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
+            <div class="card-body p-4">
+              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>5'li Ganyan Nedir?</h6>
+              <p style="font-size:0.875rem;" class="text-muted">
+                5'li ganyan; birbirini takip eden 5 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
+              </p>
+              <ul style="font-size:0.875rem;" class="text-muted">
+                <li class="mb-2">Her koşu için 1 veya daha fazla at seçebilirsiniz.</li>
+                <li class="mb-2">Birim fiyat: <strong>1 TL</strong> (her kombinasyon için)</li>
+                <li>Kupon bedeli = Koşu 1 × 2 × 3 × 4 × 5</li>
+              </ul>
+              <div class="mt-3 p-3 rounded" style="background:#e8f5ec; font-size:0.875rem;">
+                <strong>Örnek:</strong> 2×2×2×2×2 = <strong>32 kombinasyon = 32 TL</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6'lı Ganyan -->
+    <div class="tab-pane fade" id="altili" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h5 class="fw-bold mb-1">6'lı Ganyan Hesaplama</h5>
+              <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
+              <div id="altiliForm">
+                <% for(var i=1; i<=6; i++){ %>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" style="font-size:0.9rem;"><%= i %>. Koşu — Seçilen At Sayısı</label>
+                  <input type="number" class="form-control kupon-input" data-form="altili" min="1" max="20" value="1" placeholder="At sayısı">
+                </div>
+                <% } %>
+                <button class="btn w-100 fw-bold mt-2 hesapla-btn" data-form="altili" style="background:#1a6b3a; color:#fff;">
+                  <i class="fa-solid fa-calculator me-2"></i>Hesapla
+                </button>
+              </div>
+              <div class="result-box mt-4 d-none" id="altiliResult"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
+            <div class="card-body p-4">
+              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>6'lı Ganyan Nedir?</h6>
+              <p style="font-size:0.875rem;" class="text-muted">
+                6'lı ganyan; birbirini takip eden 6 koşunun birincisini doğru tahmin ettiğinizde kazandığınız en büyük ikramiyeli bahis türüdür.
+              </p>
+              <ul style="font-size:0.875rem;" class="text-muted">
+                <li class="mb-2">Her koşu için 1 veya daha fazla at seçebilirsiniz.</li>
+                <li class="mb-2">Birim fiyat: <strong>1 TL</strong> (her kombinasyon için)</li>
+                <li>Kupon bedeli = Koşu 1 × 2 × 3 × 4 × 5 × 6</li>
+              </ul>
+              <div class="mt-3 p-3 rounded" style="background:#e8f5ec; font-size:0.875rem;">
+                <strong>Örnek:</strong> 2×2×3×2×2×2 = <strong>96 kombinasyon = 96 TL</strong>
+              </div>
+              <div class="mt-2 p-3 rounded" style="background:#fff8e1; font-size:0.85rem; color:#856404;">
+                <i class="fa-solid fa-star me-1"></i>6'lı ganyan kaçırılmaz büyük ikramiye içerir!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-content -->
+
+  <!-- Genel Bilgi -->
+  <div class="card border-0 shadow-sm mt-5">
+    <div class="card-body p-4">
+      <h5 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>Genel Bilgi</h5>
+      <div class="row g-3" style="font-size:0.875rem;">
+        <div class="col-md-4">
+          <div class="d-flex gap-2">
+            <i class="fa-solid fa-circle-check mt-1 flex-shrink-0" style="color:#1a6b3a;"></i>
+            <span>Kupon bedeli, seçtiğiniz at sayılarının çarpımına eşittir (birim: 1 TL).</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex gap-2">
+            <i class="fa-solid fa-circle-check mt-1 flex-shrink-0" style="color:#1a6b3a;"></i>
+            <span>Koşmazlık durumundaki atlar TJK tarafından otomatik işlenir.</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex gap-2">
+            <i class="fa-solid fa-circle-check mt-1 flex-shrink-0" style="color:#1a6b3a;"></i>
+            <span>Resmi bahis için TJK yetkili bayilerini veya tjk.org'u kullanın.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/hr-footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.hesapla-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var form = this.dataset.form;
+    var inputs = document.querySelectorAll('.kupon-input[data-form="' + form + '"]');
+    var total = 1;
+    var valid = true;
+    inputs.forEach(function(inp) {
+      var val = parseInt(inp.value, 10);
+      if (!val || val < 1) { valid = false; return; }
+      total *= val;
+    });
+    var resultEl = document.getElementById(form + 'Result');
+    if (!valid) {
+      resultEl.className = 'result-box mt-4 alert alert-danger';
+      resultEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i>Lütfen tüm alanlara geçerli at sayısı girin.';
+      return;
+    }
+    resultEl.className = 'result-box mt-4 p-4 rounded-3 text-center';
+    resultEl.style.background = '#e8f5ec';
+    resultEl.style.border = '2px solid #1a6b3a';
+    resultEl.innerHTML =
+      '<div style="font-size:0.85rem; color:#6c757d; margin-bottom:4px;">Toplam Kombinasyon</div>' +
+      '<div style="font-size:2.2rem; font-weight:700; color:#1a6b3a;">' + total.toLocaleString('tr-TR') + '</div>' +
+      '<div style="font-size:1.1rem; font-weight:600; color:#333; margin-top:4px;">= <span style="color:#1a6b3a;">' + total.toLocaleString('tr-TR') + ' TL</span> kupon bedeli</div>';
+  });
+});
+
+// Handle tab from URL hash
+var hash = window.location.hash;
+if (hash) {
+  var tab = document.querySelector('[data-bs-target="' + hash + '"]');
+  if (tab) { new bootstrap.Tab(tab).show(); }
+}
+</script>
+</body>
+</html>
