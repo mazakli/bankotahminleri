@@ -126,8 +126,10 @@ function normalizeKosu(kosu, idx) {
 
 function normalizeHipodrom(h, idx) {
   var kosular = h.Kosular || h.kosular || h.Races || h.races || [];
-  var sehirAdi = str(h.SehirAdi || h.sehirAdi || h.HipodromAdi || h.hipodromAdi || h.Ad || h.ad || h.Name || h.name);
-  var id = sehirAdi.toLowerCase()
+  // TJK gerçek alan adları: KEY, AD, YER, GUN, KOD
+  var sehirAdi = str(h.AD || h.Ad || h.SehirAdi || h.sehirAdi || h.HipodromAdi || h.ad || h.Name || h.name);
+  var key = str(h.KEY || h.Key || h.slug || h.id || sehirAdi);
+  var id = key.toLowerCase()
     .replace(/İ/g, 'i').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g')
     .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
     .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -136,7 +138,8 @@ function normalizeHipodrom(h, idx) {
     ad:      sehirAdi.toUpperCase(),
     kisa:    sehirAdi.split(' ')[0],
     aktif:   idx === 0,
-    slug:    str(h.slug || h.Slug || h.SehirId || h.sehirId || h.Id || h.id || sehirAdi),
+    slug:    key,
+    gun:     intVal(h.GUN || h.Gun || h.gun),
     kosular: kosular.map(normalizeKosu),
   };
 }
@@ -194,22 +197,26 @@ function normalizeSonucKosu(kosu, idx) {
 // ── Tam Program Çek ───────────────────────────────────────────────────
 async function getFullProgram(tarih) {
   var raw = await fetchYarislarListesi(tarih);
-
-  // yarislar.json bir dizi veya obje olabilir
   var liste = Array.isArray(raw) ? raw : (raw.data || raw.hipodromlar || raw.list || [raw]);
 
+  // Sadece Türkiye hipodromlarını al (GUN dolu olanlar)
+  var turkiye = liste.filter(function(h) {
+    return (h.GUN || h.Gun || h.gun) !== null && (h.GUN || h.Gun || h.gun) !== undefined && (h.GUN || h.Gun || h.gun) !== '';
+  });
+
+  console.log('[tjk-api] Türkiye hipodromları:', turkiye.map(function(h){ return h.KEY || h.AD; }));
+
   var hipodromlar = [];
-  for (var i = 0; i < liste.length; i++) {
-    var h = liste[i];
-    var slug = str(h.SehirAdi || h.sehirAdi || h.HipodromAdi || h.hipodromAdi || h.slug || h.id || h.SehirId);
+  for (var i = 0; i < turkiye.length; i++) {
+    var h = turkiye[i];
+    // KEY alanını slug olarak kullan: ANKARA, IZMIR vb.
+    var slug = str(h.KEY || h.Key || h.AD || h.ad);
     try {
       var detay = await fetchProgramDetay(tarih, slug);
-      // detay bir obje: {kosular: [...]} veya direkt dizi
       var kosular = detay.Kosular || detay.kosular || detay.Races || detay.races || (Array.isArray(detay) ? detay : []);
       hipodromlar.push(normalizeHipodrom(Object.assign({}, h, { kosular: kosular }), i));
     } catch (e) {
       console.error('[tjk-api] program detay hatası (' + slug + '):', e.message);
-      // Listedeki hipodromu kosusuz ekle
       hipodromlar.push(normalizeHipodrom(h, i));
     }
   }
@@ -222,10 +229,16 @@ async function getFullSonuclar(tarih) {
   var raw = await fetchSonuclarListesi(tarih);
   var liste = Array.isArray(raw) ? raw : (raw.data || raw.hipodromlar || raw.list || [raw]);
 
+  var turkiye = liste.filter(function(h) {
+    return (h.GUN || h.Gun || h.gun) !== null && (h.GUN || h.Gun || h.gun) !== undefined && (h.GUN || h.Gun || h.gun) !== '';
+  });
+
+  console.log('[tjk-api] Sonuç hipodromları:', turkiye.map(function(h){ return h.KEY || h.AD; }));
+
   var hipodromlar = [];
-  for (var i = 0; i < liste.length; i++) {
-    var h = liste[i];
-    var slug = str(h.SehirAdi || h.sehirAdi || h.HipodromAdi || h.slug || h.id || h.SehirId);
+  for (var i = 0; i < turkiye.length; i++) {
+    var h = turkiye[i];
+    var slug = str(h.KEY || h.Key || h.AD || h.ad);
     try {
       var detay = await fetchSonuclarDetay(tarih, slug);
       var kosular = detay.Kosular || detay.kosular || detay.Races || detay.races || (Array.isArray(detay) ? detay : []);
@@ -241,7 +254,7 @@ async function getFullSonuclar(tarih) {
   return { tarih: tarih, hipodromlar: hipodromlar };
 }
 
-// Debug: Ham API verisini döner (geliştirme aşamasında kullanılır)
+// Debug fonksiyonları
 async function getRawYarislar(tarih) {
   return fetchYarislarListesi(tarih);
 }
@@ -250,9 +263,15 @@ async function getRawSonuclar(tarih) {
   return fetchSonuclarListesi(tarih);
 }
 
+async function getRawDetay(tarih, key, tip) {
+  if (tip === 'sonuc') return fetchSonuclarDetay(tarih, key);
+  return fetchProgramDetay(tarih, key);
+}
+
 module.exports = {
   getFullProgram:   getFullProgram,
   getFullSonuclar:  getFullSonuclar,
   getRawYarislar:   getRawYarislar,
   getRawSonuclar:   getRawSonuclar,
+  getRawDetay:      getRawDetay,
 };

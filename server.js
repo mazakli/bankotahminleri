@@ -292,7 +292,7 @@ app.get('/kupon', async function (req, res) {
 // TJK ham API debug endpoint'i (geliştirme aşamasında)
 app.get('/api/tjk-debug', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
-  var tip   = (req.query.tip   || 'program').trim(); // program | sonuc
+  var tip   = (req.query.tip   || 'program').trim();
   try {
     var raw = tip === 'sonuc'
       ? await tjkApi.getRawSonuclar(tarih)
@@ -300,6 +300,19 @@ app.get('/api/tjk-debug', async function (req, res) {
     res.json({ tarih: tarih, tip: tip, raw: raw });
   } catch (e) {
     res.json({ hata: e.message, tarih: tarih });
+  }
+});
+
+// Detay debug: /api/tjk-debug-detay?tarih=2026-05-14&key=ANKARA&tip=program
+app.get('/api/tjk-debug-detay', async function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var key   = (req.query.key   || 'ANKARA').trim();
+  var tip   = (req.query.tip   || 'program').trim();
+  try {
+    var raw = await tjkApi.getRawDetay(tarih, key, tip);
+    res.json({ tarih: tarih, key: key, tip: tip, raw: raw });
+  } catch (e) {
+    res.json({ hata: e.message, tarih: tarih, key: key });
   }
 });
 
