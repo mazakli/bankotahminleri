@@ -31,6 +31,18 @@
 
 <div class="container py-4">
 
+  <% if (typeof kaynakGercek !== 'undefined' && !kaynakGercek) { %>
+  <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span><strong>Demo Modu:</strong> TJK API'ye şu an erişilemiyor. Örnek veriler gösteriliyor.</span>
+  </div>
+  <% } else if (typeof kaynakGercek !== 'undefined' && kaynakGercek) { %>
+  <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+    <i class="fa-solid fa-circle-check"></i>
+    <span><strong>Canlı Veri:</strong> TJK resmi verisi kullanılıyor.</span>
+  </div>
+  <% } %>
+
   <!-- Date picker -->
   <div class="tarih-picker mb-4">
     <form method="GET" action="/sonuclar" class="d-flex flex-column flex-md-row gap-3 align-items-md-end">

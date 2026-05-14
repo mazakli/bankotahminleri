@@ -176,39 +176,131 @@ var demoPharmacies = [
 
 // ── At Yarışı Sayfaları ──────────────────────────────────────────────
 var yarislar = require('./data/yarislar');
+var tjkApi   = require('./data/tjkApi');
 
 function trToday() {
   return new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split('T')[0];
 }
 
-app.get('/program', function (req, res) {
+// TJK API'yi dene, hata alırsa mock veriye düş
+async function getBultenData(tarih) {
+  try {
+    var data = await tjkApi.getFullProgram(tarih);
+    if (data.hipodromlar && data.hipodromlar.length > 0 && data.hipodromlar[0].kosular && data.hipodromlar[0].kosular.length > 0) {
+      console.log('[tjk] Gerçek veri kullanılıyor:', tarih);
+      return { hipodromlar: data.hipodromlar, kaynakGercek: true };
+    }
+    throw new Error('Veri boş döndü');
+  } catch (e) {
+    console.log('[tjk] API hatası, mock veri kullanılıyor:', e.message);
+    return { hipodromlar: yarislar.getMockBulten(tarih), kaynakGercek: false };
+  }
+}
+
+async function getSonuclarData(tarih) {
+  try {
+    var data = await tjkApi.getFullSonuclar(tarih);
+    if (data.hipodromlar && data.hipodromlar.length > 0) {
+      console.log('[tjk] Gerçek sonuç verisi kullanılıyor:', tarih);
+      return { hipodromlar: data.hipodromlar, kaynakGercek: true };
+    }
+    throw new Error('Sonuç verisi boş döndü');
+  } catch (e) {
+    console.log('[tjk] Sonuç API hatası, mock veri kullanılıyor:', e.message);
+    return { hipodromlar: yarislar.getMockSonuclar(tarih), kaynakGercek: false };
+  }
+}
+
+app.get('/program', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
-  var data = yarislar.getMockBulten(tarih);
-  res.render('program', { data: data, tarih: tarih, title: 'Günlük Yarış Programı | bankotahminleri.com', description: 'Bugünkü at yarışı programı, koşu bilgileri ve at listesi.' });
+  try {
+    var result = await getBultenData(tarih);
+    res.render('program', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Programı | bankotahminleri.com', description: 'Bugünkü at yarışı programı, koşu bilgileri ve at listesi.' });
+  } catch (e) {
+    res.status(500).send('Sayfa yüklenemedi: ' + e.message);
+  }
 });
 
-app.get('/bulten', function (req, res) {
+app.get('/bulten', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
-  var data = yarislar.getMockBulten(tarih);
-  res.render('bulten', { data: data, tarih: tarih, title: 'Günlük Yarış Bülteni | bankotahminleri.com', description: 'Bugünkü at yarışı bülteni, jokey ve antrenör bilgileri.' });
+  try {
+    var result = await getBultenData(tarih);
+    res.render('bulten', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Bülteni | bankotahminleri.com', description: 'Bugünkü at yarışı bülteni, jokey ve antrenör bilgileri.' });
+  } catch (e) {
+    res.status(500).send('Sayfa yüklenemedi: ' + e.message);
+  }
 });
 
-app.get('/agf', function (req, res) {
+app.get('/agf', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
-  var data = yarislar.getMockAGF(tarih);
-  res.render('agf', { data: data, tarih: tarih, title: 'AGF Tablosu | bankotahminleri.com', description: 'Anlaşmalı Ganyan Fiyatları (AGF) tablosu.' });
+  try {
+    var result = await getBultenData(tarih);
+    // AGF için aynı bulten verisini kullan, AGF hesaplamalarını ekle
+    var agfData = result.hipodromlar.map ? result.hipodromlar : yarislar.getMockAGF(tarih);
+    // getMockAGF formatına çevir eğer gerçek veri ise
+    if (result.kaynakGercek) {
+      agfData = result.hipodromlar.map(function(hip) {
+        return Object.assign({}, hip, {
+          kosular: hip.kosular.map(function(kosu) {
+            var atlar = kosu.atlar.map(function(at) {
+              var rngVal = (at.agf * 0.85 + 0.5);
+              return {
+                no: at.no, ad: at.ad,
+                agf: at.agf,
+                ganyan: rngVal.toFixed(2),
+                plase: (at.agf * 0.35 + 0.3).toFixed(2)
+              };
+            });
+            var sorted = atlar.slice().sort(function(a,b){ return a.agf - b.agf; });
+            return Object.assign({}, kosu, {
+              atlar: atlar,
+              favori: sorted[0],
+              durum: 'Yarış Başlamadı'
+            });
+          })
+        });
+      });
+    } else {
+      agfData = yarislar.getMockAGF(tarih);
+    }
+    res.render('agf', { data: agfData, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'AGF Tablosu | bankotahminleri.com', description: 'Anlaşmalı Ganyan Fiyatları (AGF) tablosu.' });
+  } catch (e) {
+    res.status(500).send('Sayfa yüklenemedi: ' + e.message);
+  }
 });
 
-app.get('/sonuclar', function (req, res) {
+app.get('/sonuclar', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
-  var data = yarislar.getMockSonuclar(tarih);
-  res.render('sonuclar', { data: data, tarih: tarih, title: 'Yarış Sonuçları | bankotahminleri.com', description: 'At yarışı sonuçları ve ikramiye bilgileri.' });
+  try {
+    var result = await getSonuclarData(tarih);
+    res.render('sonuclar', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Yarış Sonuçları | bankotahminleri.com', description: 'At yarışı sonuçları ve ikramiye bilgileri.' });
+  } catch (e) {
+    res.status(500).send('Sayfa yüklenemedi: ' + e.message);
+  }
 });
 
-app.get('/kupon', function (req, res) {
+app.get('/kupon', async function (req, res) {
   var tarih = trToday();
-  var data = yarislar.getMockBulten(tarih);
-  res.render('kupon', { data: data, tarih: tarih, title: 'Kupon Yap | bankotahminleri.com', description: 'At yarışı kuponu oluştur, ganyan ve plase seç.' });
+  try {
+    var result = await getBultenData(tarih);
+    res.render('kupon', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Kupon Yap | bankotahminleri.com', description: 'At yarışı kuponu oluştur, ganyan ve plase seç.' });
+  } catch (e) {
+    res.status(500).send('Sayfa yüklenemedi: ' + e.message);
+  }
+});
+
+// TJK ham API debug endpoint'i (geliştirme aşamasında)
+app.get('/api/tjk-debug', async function (req, res) {
+  var tarih = (req.query.tarih || trToday()).trim();
+  var tip   = (req.query.tip   || 'program').trim(); // program | sonuc
+  try {
+    var raw = tip === 'sonuc'
+      ? await tjkApi.getRawSonuclar(tarih)
+      : await tjkApi.getRawYarislar(tarih);
+    res.json({ tarih: tarih, tip: tip, raw: raw });
+  } catch (e) {
+    res.json({ hata: e.message, tarih: tarih });
+  }
 });
 
 app.get('/api/eczaneler', rateLimit(30), async function (req, res) {

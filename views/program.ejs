@@ -40,6 +40,18 @@
 
 <div class="container py-4">
 
+  <% if (typeof kaynakGercek !== 'undefined' && !kaynakGercek) { %>
+  <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span><strong>Demo Modu:</strong> TJK API'ye şu an erişilemiyor. Örnek veriler gösteriliyor.</span>
+  </div>
+  <% } else if (typeof kaynakGercek !== 'undefined' && kaynakGercek) { %>
+  <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3" role="alert">
+    <i class="fa-solid fa-circle-check"></i>
+    <span><strong>Canlı Veri:</strong> TJK resmi verisi kullanılıyor.</span>
+  </div>
+  <% } %>
+
   <!-- Hippodrome Tabs -->
   <ul class="nav nav-tabs hipodromo-tabs mb-4" id="hipTabs" role="tablist">
     <% data.forEach(function(hip, idx) { %>
