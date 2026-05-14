@@ -106,7 +106,6 @@
       : 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address || name);
     if (extLink) extLink.href = mapsUrl;
 
-    // Destroy previous map
     if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
 
     var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -128,7 +127,6 @@
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(_leafletMap);
 
-      // Eczane marker
       L.marker(destLL)
         .addTo(_leafletMap)
         .bindPopup('<strong>' + name + '</strong><br><small>' + (address || '') + '</small>')
@@ -136,7 +134,6 @@
 
       _leafletMap.invalidateSize();
 
-      // Kullanici konumu al ve rota ciz
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function (pos) {
@@ -163,7 +160,7 @@
               }
             }).addTo(_leafletMap);
           },
-          function () { /* konum izni verilmedi, sadece harita gosterilir */ },
+          function () {},
           { timeout: 6000, maximumAge: 60000 }
         );
       }
@@ -173,7 +170,6 @@
     modal.show();
   };
 
-  // Modal kapaninca haritayi temizle
   var modalEl = document.getElementById('mapsModal');
   if (modalEl) {
     modalEl.addEventListener('hidden.bs.modal', function () {
@@ -200,6 +196,47 @@
 
   window.trackPhone = function () {};
   window.doSearch   = function () { var i = document.getElementById('citySearch'); if (i) triggerSearch(i.value); };
+
+  window.findNearestPharmacy = function () {
+    var btnEl    = document.getElementById('btnNearest');
+    var resultEl = document.getElementById('nearestResult');
+    if (!resultEl) return;
+    if (allPharmacies.length === 0) {
+      resultEl.textContent = 'Önce eczane listesinin yüklenmesini bekleyin.';
+      return;
+    }
+    if (!navigator.geolocation) {
+      resultEl.textContent = 'Tarayıcınız konum özelliğini desteklemiyor.';
+      return;
+    }
+    if (btnEl) btnEl.disabled = true;
+    resultEl.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Konum alınıyor...';
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        var nearest = null;
+        var minDist = Infinity;
+        allPharmacies.forEach(function (p) {
+          if (!p.lat || !p.lng) return;
+          var d = Math.pow(parseFloat(p.lat) - lat, 2) + Math.pow(parseFloat(p.lng) - lng, 2);
+          if (d < minDist) { minDist = d; nearest = p; }
+        });
+        if (btnEl) btnEl.disabled = false;
+        if (!nearest) {
+          resultEl.textContent = 'Koordinat bilgisi bulunan eczane bulunamadı.';
+          return;
+        }
+        resultEl.textContent = '';
+        window.showDirections(nearest.name, nearest.address, nearest.lat, nearest.lng);
+      },
+      function () {
+        if (btnEl) btnEl.disabled = false;
+        resultEl.textContent = 'Konum izni verilmedi veya alınamadı.';
+      },
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  };
 
   function initHomeSearch() {
     var input = document.getElementById('citySearch');

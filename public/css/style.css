@@ -217,18 +217,6 @@ body {
 
 .modal-header.bg-red { background-color: var(--red) !important; }
 
-.footer-dark { background: #1a1a2e; }
-
-.footer-text { color: #adb5bd; }
-
-.footer-link {
-  color: #adb5bd;
-  text-decoration: none;
-  font-size: 0.88rem;
-  transition: color 0.15s;
-}
-.footer-link:hover { color: #fff; }
-
 .btn-mic {
   background: #fff;
   color: var(--red);
@@ -286,6 +274,30 @@ body {
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
+
+.nearest-bar {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid var(--red);
+  border-radius: 8px;
+}
+
+.seo-content p { font-size: 0.97rem; color: #444; line-height: 1.75; }
+
+.faq-section .accordion-button { font-size: 0.95rem; }
+.faq-section .accordion-button:not(.collapsed) { color: var(--red); background: var(--red-light); }
+.faq-section .accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(200,16,46,0.15); }
+.faq-section .accordion-body { font-size: 0.9rem; color: #555; }
+
+.footer-dark { background: #1a1a2e; }
+.footer-text { color: #adb5bd; }
+.footer-link {
+  color: #adb5bd;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.15s;
+}
+.footer-link:hover { color: #fff; }
 
 .legal-content h2 {
   font-size: 1.1rem;

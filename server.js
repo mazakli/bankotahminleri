@@ -15,6 +15,46 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── Güvenlik başlıkları ──────────────────────────────────────────────
+app.use(function (req, res, next) {
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=()');
+  if (req.path.startsWith('/widget')) {
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  } else {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net unpkg.com; " +
+      "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net unpkg.com cdnjs.cloudflare.com fonts.googleapis.com; " +
+      "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com data:; " +
+      "img-src 'self' data: *.tile.openstreetmap.org *.openstreetmap.org; " +
+      "connect-src 'self' router.project-osrm.org; " +
+      "frame-src 'none';"
+    );
+  }
+  next();
+});
+
+// ── Basit rate limiter (paket gerektirmez) ───────────────────────────
+var _rlMap = new Map();
+setInterval(function () {
+  var cutoff = Math.floor(Date.now() / 60000) - 2;
+  _rlMap.forEach(function (_, k) { if (+k.split('|')[1] < cutoff) _rlMap.delete(k); });
+}, 120000);
+function rateLimit(max) {
+  return function (req, res, next) {
+    var key = req.ip + '|' + Math.floor(Date.now() / 60000);
+    var cnt = (_rlMap.get(key) || 0) + 1;
+    _rlMap.set(key, cnt);
+    if (cnt > max) return res.status(429).json({ error: 'Çok fazla istek. Lütfen bir dakika bekleyin.' });
+    next();
+  };
+}
+
 // non-www → www (301 kalıcı yönlendirme, SEO için zorunlu)
 app.use(function (req, res, next) {
   if (req.hostname === '724eczane.com') {
@@ -129,7 +169,7 @@ var demoPharmacies = [
   { name:'HAYAT ECZANESİ',  dist:'MERKEZ', address:'Yıldız Mah. Gül Sok. No:3',     phone:'0312 555 77 88', lat:'', lng:'' }
 ];
 
-app.get('/api/eczaneler', async function (req, res) {
+app.get('/api/eczaneler', rateLimit(30), async function (req, res) {
   var citySlug = (req.query.il    || '').trim();
   var distSlug = (req.query.ilce  || '').trim();
   var date     = (req.query.tarih || '').trim();
@@ -279,6 +319,7 @@ app.get('/sitemap.xml', function (req, res) {
     { loc: base + '/iletisim',            priority: '0.5', freq: 'monthly' },
     { loc: base + '/gizlilik',            priority: '0.3', freq: 'yearly'  },
     { loc: base + '/kullanim-kosullari',  priority: '0.3', freq: 'yearly'  },
+    { loc: base + '/cerez-politikasi',    priority: '0.3', freq: 'yearly'  },
   ];
   iller.forEach(function (il) {
     urls.push({ loc: base + '/nobetci-' + il.slug, priority: '0.8', freq: 'daily' });
@@ -351,8 +392,14 @@ app.get('/kullanim-kosullari', function (req, res) {
   res.render('kullanim-kosullari', { iller: iller, title: 'Kullanım Koşulları | 724eczane.com', description: '724eczane.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.' });
 });
 
+app.get('/cerez-politikasi', function (req, res) {
+  res.render('cerez-politikasi', { title: 'Çerez Politikası | 724eczane.com', description: '724eczane.com çerez politikası. Sitede kullanılan çerezler ve kişisel veri işleme hakkında bilgi edinin.' });
+});
+
 app.get('/health',    function (req, res) { res.json({ status: 'ok', time: new Date().toISOString() }); });
 app.get('/debug-env', function (req, res) {
+  var adminKey = process.env.ADMIN_KEY || '';
+  if (!adminKey || (req.query.key || '') !== adminKey) return res.status(404).send('Not found');
   var key = (process.env.NOSYAPI_KEY || '').trim();
   res.json({ NOSYAPI_KEY: key ? 'VAR (' + key.length + ' karakter)' : 'YOK', PORT: PORT });
 });
