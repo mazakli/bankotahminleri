@@ -156,50 +156,78 @@ function normalizeHipodrom(h, idx) {
 }
 
 function normalizeSonucAt(at, idx) {
+  var agfRaw = str(at.AGF1 || at.AGF || at.agf || '0').replace(',', '.');
   return {
-    gelisSirasi: intVal(at.GelisSirasi || at.gelisSirasi || at.Sira || at.sira) || (idx + 1),
-    atNo:        intVal(at.AtNo || at.atNo || at.No || at.no),
-    atAd:        str(at.AtAdi || at.atAdi || at.Ad || at.ad),
-    jokey:       str(at.JokeyAdi || at.jokeyAdi || at.Jokey || at.jokey),
-    derece:      str(at.Derece || at.derece || at.Sure || at.sure || at.Time),
-    handikap:    intVal(at.Kilo || at.kilo || at.Handikap || at.handikap),
-    agf:         num(at.AGF || at.agf),
+    gelisSirasi: intVal(at.SONUC || at.GelisSirasi || at.gelisSirasi) || (idx + 1),
+    atNo:        intVal(at.NO || at.AtNo || at.atNo),
+    atAd:        str(at.AD || at.AtAdi || at.atAdi),
+    jokey:       str(at.JOKEYADI || at.JokeyAdi || at.jokeyAdi),
+    derece:      str(at.DERECE || at.Derece || at.derece || ''),
+    handikap:    num(at.KILO || at.Kilo || at.kilo),
+    agf:         parseFloat(agfRaw) || 0,
   };
 }
 
 function normalizeOdemeler(kosu) {
-  var o = kosu.Odemeler || kosu.odemeler || kosu.Ikramiyeler || kosu.ikramiyeler || {};
+  // TJK sonuç endpoint ödemeleri BAHISLER_TR string içinde tutar
+  var bahis = str(kosu.BAHISLER_TR || kosu.emiParasalNeticeler_tr || '');
+
+  function extractFirst(pattern) {
+    var m = bahis.match(new RegExp(pattern));
+    return m || [];
+  }
+
+  var ganyanM = extractFirst('GANYAN\\((\\d+)\\):\\s*([\\d.,]+)TL');
+  var cifteM  = extractFirst('[\\d]+\\.\\s*ÇİFTE\\(([^)]+)\\):\\s*([\\d.,]+)TL');
+
+  // Tekli PLASE(no): değer — PLASE İKİLİ ile karışmaması için negatif bakış
+  var plaseAll = [];
+  var plaseRe  = /PLASE\((\d+)\):\s*([\d.,]+)TL/g;
+  var pm;
+  while ((pm = plaseRe.exec(bahis)) !== null) {
+    plaseAll.push({ no: intVal(pm[1]), val: pm[2] });
+  }
+
   return {
-    ganyanAt:  str(o.GanyanAt  || o.ganyanAt  || ''),
-    ganyanNo:  intVal(o.GanyanNo || o.ganyanNo),
-    ganyan:    str(o.Ganyan    || o.ganyan    || ''),
-    plaseAt1:  str(o.PlaseAt1  || o.plaseAt1  || ''),
-    plaseNo1:  intVal(o.PlaseNo1 || o.plaseNo1),
-    plase1:    str(o.Plase1    || o.plase1    || ''),
-    plaseAt2:  str(o.PlaseAt2  || o.plaseAt2  || ''),
-    plaseNo2:  intVal(o.PlaseNo2 || o.plaseNo2),
-    plase2:    str(o.Plase2    || o.plase2    || ''),
-    plaseAt3:  str(o.PlaseAt3  || o.plaseAt3  || ''),
-    plaseNo3:  intVal(o.PlaseNo3 || o.plaseNo3),
-    plase3:    str(o.Plase3    || o.plase3    || ''),
-    cifte:     str(o.Cifte     || o.cifte     || ''),
-    cifteStr:  str(o.CifteStr  || o.cifteStr  || ''),
-    surpriz:   str(o.Surpriz   || o.surpriz   || ''),
-    surprizStr:str(o.SurprizStr|| o.surprizStr|| ''),
+    ganyanNo:    ganyanM[1] ? intVal(ganyanM[1]) : 0,
+    ganyanAt:    '',
+    ganyan:      ganyanM[2] || '',
+    plaseNo1:    plaseAll[0] ? plaseAll[0].no  : 0,
+    plaseAt1:    '',
+    plase1:      plaseAll[0] ? plaseAll[0].val : '',
+    plaseNo2:    plaseAll[1] ? plaseAll[1].no  : 0,
+    plaseAt2:    '',
+    plase2:      plaseAll[1] ? plaseAll[1].val : '',
+    plaseNo3:    plaseAll[2] ? plaseAll[2].no  : 0,
+    plaseAt3:    '',
+    plase3:      plaseAll[2] ? plaseAll[2].val : '',
+    cifte:       cifteM[2] || '',
+    cifteStr:    cifteM[1] || '',
+    surpriz:     '',
+    surprizStr:  '',
   };
 }
 
 function normalizeSonucKosu(kosu, idx) {
-  var sonuclar = kosu.Sonuclar || kosu.sonuclar || kosu.Results || kosu.results || [];
+  // TJK sonuç endpoint program ile aynı yapıyı döndürür: atlar[] içinde SONUC alanı
+  var atlar = kosu.atlar || kosu.Atlar || [];
+  var ikramiyeler = kosu.ikramiyeler || [];
+  var ikramiye1 = str(ikramiyeler[0] || '');
+  var ikramiyeStr = ikramiye1 ? ikramiye1.split(',')[0].replace(/\./g, '') + ' TL' : '-';
+
+  var sonuclar = atlar
+    .filter(function(a) { return !a.KOSMAZ && a.SONUC; })
+    .sort(function(a, b) { return intVal(a.SONUC) - intVal(b.SONUC); });
+
   return {
-    no:          intVal(kosu.KosuNo || kosu.kosuNo || kosu.No || kosu.no) || (idx + 1),
-    saat:        str(kosu.BaslangicSaati || kosu.baslangicSaati || kosu.Saat || kosu.saat),
-    mesafe:      intVal(kosu.Mesafe || kosu.mesafe),
-    pist:        str(kosu.PistCinsi || kosu.pistCinsi || kosu.Pist || kosu.pist),
-    yas:         str(kosu.YasGrubu || kosu.yasGrubu || kosu.Yas || kosu.yas),
-    cins:        str(kosu.Cins || kosu.cins),
-    ikramiyeStr: str(kosu.IkramiyeStr || kosu.ikramiyeStr) || intVal(kosu.Ikramiye || kosu.ikramiye || 0).toLocaleString('tr-TR') + ' TL',
-    atSayisi:    intVal(kosu.AtSayisi || kosu.atSayisi) || sonuclar.length,
+    no:          intVal(kosu.NO || kosu.KosuNo || kosu.no) || (idx + 1),
+    saat:        str(kosu.SAAT || kosu.BaslangicSaati || kosu.saat),
+    mesafe:      intVal(kosu.MESAFE || kosu.Mesafe || kosu.mesafe),
+    pist:        str(kosu.PISTADI_TR || kosu.PistCinsi || kosu.pist),
+    yas:         str(kosu.GRUP_TR || kosu.YasGrubu || kosu.yas),
+    cins:        str(kosu.CINSDETAY_TR || kosu.CINSIYET || kosu.cins || ''),
+    ikramiyeStr: ikramiyeStr,
+    atSayisi:    sonuclar.length,
     sonuclar:    sonuclar.map(normalizeSonucAt),
     odemeler:    normalizeOdemeler(kosu),
   };
