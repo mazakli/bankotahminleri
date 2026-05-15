@@ -209,7 +209,7 @@ app.get('/program', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
   try {
     var result = await getBultenData(tarih);
-    res.render('program', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Programı | bankotahminleri.com', description: 'Bugünkü at yarışı programı, koşu bilgileri ve at listesi.' });
+    res.render('program', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Programı | bankotahminleri.com', description: 'Bugünkü at yarışı programı, koşu bilgileri ve at listesi.', canonical: 'https://www.bankotahminleri.com/program' });
   } catch (e) {
     res.status(500).send('Sayfa yüklenemedi: ' + e.message);
   }
@@ -219,7 +219,7 @@ app.get('/bulten', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
   try {
     var result = await getBultenData(tarih);
-    res.render('bulten', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Bülteni | bankotahminleri.com', description: 'Bugünkü at yarışı bülteni, jokey ve antrenör bilgileri.' });
+    res.render('bulten', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Günlük Yarış Bülteni | bankotahminleri.com', description: 'Bugünkü at yarışı bülteni, jokey ve antrenör bilgileri.', canonical: 'https://www.bankotahminleri.com/bulten' });
   } catch (e) {
     res.status(500).send('Sayfa yüklenemedi: ' + e.message);
   }
@@ -257,7 +257,7 @@ app.get('/agf', async function (req, res) {
     } else {
       agfData = yarislar.getMockAGF(tarih);
     }
-    res.render('agf', { data: agfData, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'AGF Tablosu | bankotahminleri.com', description: 'Anlaşmalı Ganyan Fiyatları (AGF) tablosu.' });
+    res.render('agf', { data: agfData, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'AGF Tablosu | bankotahminleri.com', description: 'Anlaşmalı Ganyan Fiyatları (AGF) tablosu.', canonical: 'https://www.bankotahminleri.com/agf' });
   } catch (e) {
     res.status(500).send('Sayfa yüklenemedi: ' + e.message);
   }
@@ -267,7 +267,7 @@ app.get('/sonuclar', async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
   try {
     var result = await getSonuclarData(tarih);
-    res.render('sonuclar', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Yarış Sonuçları | bankotahminleri.com', description: 'At yarışı sonuçları ve ikramiye bilgileri.' });
+    res.render('sonuclar', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Yarış Sonuçları | bankotahminleri.com', description: 'At yarışı sonuçları ve ikramiye bilgileri.', canonical: 'https://www.bankotahminleri.com/sonuclar' });
   } catch (e) {
     res.status(500).send('Sayfa yüklenemedi: ' + e.message);
   }
@@ -277,7 +277,7 @@ app.get('/kupon', async function (req, res) {
   var tarih = trToday();
   try {
     var result = await getBultenData(tarih);
-    res.render('kupon', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Kupon Yap | bankotahminleri.com', description: 'At yarışı kuponu oluştur, ganyan ve plase seç.' });
+    res.render('kupon', { data: result.hipodromlar, kaynakGercek: result.kaynakGercek, tarih: tarih, title: 'Kupon Yap | bankotahminleri.com', description: 'At yarışı kuponu oluştur, ganyan ve plase seç.', canonical: 'https://www.bankotahminleri.com/kupon' });
   } catch (e) {
     res.status(500).send('Sayfa yüklenemedi: ' + e.message);
   }
@@ -495,7 +495,7 @@ app.get('/nobetci-:slug', function (req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  res.render('hr-home', { title: 'bankotahminleri.com — At Yarışı Tahmin & Analiz Platformu', description: "Türkiye'nin at yarışı tahmin ve analiz platformu. TJK programı, AGF tabloları, günlük bülten ve yarış sonuçları." });
+  res.render('hr-home', { title: 'bankotahminleri.com — At Yarışı Tahmin & Analiz Platformu', description: "Türkiye'nin at yarışı tahmin ve analiz platformu. TJK programı, AGF tabloları, günlük bülten ve yarış sonuçları.", canonical: 'https://www.bankotahminleri.com/' });
 });
 
 app.get('/widget', function (req, res) {
@@ -519,27 +519,27 @@ app.get('/eczane-ekle', function (req, res) {
 });
 
 app.get('/iletisim', function (req, res) {
-  res.render('iletisim', { title: 'İletişim | bankotahminleri.com', description: 'bankotahminleri.com ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.' });
+  res.render('iletisim', { title: 'İletişim | bankotahminleri.com', description: 'bankotahminleri.com ile iletişime geçin. Soru, öneri ve geri bildirimleriniz için bize ulaşın.', canonical: 'https://www.bankotahminleri.com/iletisim' });
 });
 
 app.get('/gizlilik', function (req, res) {
-  res.render('gizlilik', { title: 'Gizlilik Politikası | bankotahminleri.com', description: 'bankotahminleri.com gizlilik politikası. Kişisel verilerinizin nasıl toplandığını ve kullanıldığını öğrenin.' });
+  res.render('gizlilik', { title: 'Gizlilik Politikası | bankotahminleri.com', description: 'bankotahminleri.com gizlilik politikası. Kişisel verilerinizin nasıl toplandığını ve kullanıldığını öğrenin.', canonical: 'https://www.bankotahminleri.com/gizlilik' });
 });
 
 app.get('/kullanim-kosullari', function (req, res) {
-  res.render('kullanim-kosullari', { title: 'Kullanım Koşulları | bankotahminleri.com', description: 'bankotahminleri.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.' });
+  res.render('kullanim-kosullari', { title: 'Kullanım Koşulları | bankotahminleri.com', description: 'bankotahminleri.com kullanım koşulları. Siteyi kullanmadan önce lütfen bu koşulları okuyunuz.', canonical: 'https://www.bankotahminleri.com/kullanim-kosullari' });
 });
 
 app.get('/cerez-politikasi', function (req, res) {
-  res.render('cerez-politikasi', { title: 'Çerez Politikası | bankotahminleri.com', description: 'bankotahminleri.com çerez politikası. Sitede kullanılan çerezler ve kişisel veri işleme hakkında bilgi edinin.' });
+  res.render('cerez-politikasi', { title: 'Çerez Politikası | bankotahminleri.com', description: 'bankotahminleri.com çerez politikası. Sitede kullanılan çerezler ve kişisel veri işleme hakkında bilgi edinin.', canonical: 'https://www.bankotahminleri.com/cerez-politikasi' });
 });
 
 app.get('/veri-bilgisi', function (req, res) {
-  res.render('veri-bilgisi', { title: 'Veri & Bülten Bilgisi | bankotahminleri.com', description: 'bankotahminleri.com veri kaynağı, güncelleme saatleri ve bülten içerikleri hakkında bilgi.' });
+  res.render('veri-bilgisi', { title: 'Veri & Bülten Bilgisi | bankotahminleri.com', description: 'bankotahminleri.com veri kaynağı, güncelleme saatleri ve bülten içerikleri hakkında bilgi.', canonical: 'https://www.bankotahminleri.com/veri-bilgisi' });
 });
 
 app.get('/kupon-hesaplama', function (req, res) {
-  res.render('kupon-hesaplama', { title: 'Kupon Hesaplama | bankotahminleri.com', description: "3'lü, 4'lü, 5'li ve 6'lı ganyan kupon ücretlerini kolayca hesaplayın — bankotahminleri.com" });
+  res.render('kupon-hesaplama', { title: 'Kupon Hesaplama | bankotahminleri.com', description: "3'lü, 4'lü, 5'li ve 6'lı ganyan kupon ücretlerini kolayca hesaplayın — bankotahminleri.com", canonical: 'https://www.bankotahminleri.com/kupon-hesaplama' });
 });
 
 app.get('/health',    function (req, res) { res.json({ status: 'ok', time: new Date().toISOString() }); });

@@ -1,7 +1,10 @@
 User-agent: *
 Allow: /
+
 Disallow: /api/
 Disallow: /debug-env
 Disallow: /health
+Disallow: /widget
+Disallow: /nobetci-*
 
-Sitemap: https://www.724eczane.com/sitemap.xml
+Sitemap: https://www.bankotahminleri.com/sitemap.xml
