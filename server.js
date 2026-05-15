@@ -55,10 +55,10 @@ function rateLimit(max) {
   };
 }
 
-// non-www → www (301 kalıcı yönlendirme, SEO için zorunlu)
+// non-www → www redirect
 app.use(function (req, res, next) {
-  if (req.hostname === '724eczane.com') {
-    return res.redirect(301, 'https://www.724eczane.com' + req.originalUrl);
+  if (req.hostname === 'bankotahminleri.com') {
+    return res.redirect(301, 'https://www.bankotahminleri.com' + req.originalUrl);
   }
   next();
 });
@@ -289,8 +289,15 @@ app.get('/kupon', async function (req, res) {
   }
 });
 
-// TJK ham API debug endpoint'i (geliştirme aşamasında)
-app.get('/api/tjk-debug', async function (req, res) {
+// TJK ham API debug endpoint'leri — ADMIN_KEY ile korunur
+function requireAdminKey(req, res, next) {
+  var adminKey = (process.env.ADMIN_KEY || '').trim();
+  var provided = (req.query.key || req.headers['x-admin-key'] || '').trim();
+  if (!adminKey || provided !== adminKey) return res.status(403).json({ error: 'Yetkisiz' });
+  next();
+}
+
+app.get('/api/tjk-debug', requireAdminKey, async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
   var tip   = (req.query.tip   || 'program').trim();
   try {
@@ -303,8 +310,7 @@ app.get('/api/tjk-debug', async function (req, res) {
   }
 });
 
-// Detay debug: /api/tjk-debug-detay?tarih=2026-05-14&key=ANKARA&tip=program
-app.get('/api/tjk-debug-detay', async function (req, res) {
+app.get('/api/tjk-debug-detay', requireAdminKey, async function (req, res) {
   var tarih = (req.query.tarih || trToday()).trim();
   var key   = (req.query.key   || 'ANKARA').trim();
   var tip   = (req.query.tip   || 'program').trim();
@@ -333,7 +339,7 @@ app.get('/api/eczaneler', rateLimit(30), async function (req, res) {
   }
 });
 
-app.get('/api/cache-status', function (req, res) {
+app.get('/api/cache-status', requireAdminKey, function (req, res) {
   var ms = msUntilNextRefresh();
   var keys = [];
   cityCache.forEach(function (v, k) { keys.push(k + ' (' + v.length + ')'); });
@@ -346,7 +352,7 @@ app.get('/api/cache-status', function (req, res) {
   });
 });
 
-app.get('/api/test-city', async function (req, res) {
+app.get('/api/test-city', requireAdminKey, async function (req, res) {
   var apiKey = (process.env.NOSYAPI_KEY || '').trim();
   if (!apiKey) return res.json({ error: 'NOSYAPI_KEY yok' });
   var city = (req.query.city || 'istanbul').trim();
@@ -363,7 +369,6 @@ app.get('/api/test-city', async function (req, res) {
       status:      r.status,
       city:        city,
       date:        date,
-      url:         url,
       rowCount:    Array.isArray(rows) ? rows.length : null,
       firstRowKeys: firstRow ? Object.keys(firstRow) : null,
       firstRow:    firstRow,
@@ -435,10 +440,8 @@ app.get('/api/indexing/submit-core', async function (req, res) {
   if ((req.query.key || '') !== (process.env.ADMIN_KEY || '')) {
     return res.status(403).json({ error: 'Yetkisiz' });
   }
-  var base = 'https://www.724eczane.com';
-  var coreUrls = ['/', '/eczane-ekle', '/sitene-ekle', '/iletisim'].map(function (p) { return base + p; });
-  var iller2 = require('./data/iller');
-  iller2.forEach(function (il) { coreUrls.push(base + '/nobetci-' + il.slug); });
+  var base = 'https://www.bankotahminleri.com';
+  var coreUrls = ['/', '/program', '/bulten', '/agf', '/sonuclar', '/kupon', '/kupon-hesaplama', '/veri-bilgisi', '/iletisim'].map(function (p) { return base + p; });
   var results = [];
   for (var u of coreUrls) {
     try { results.push({ url: u, result: await googleIndexUrl(u, 'URL_UPDATED') }); }
@@ -456,24 +459,22 @@ app.post('/api/eczane-ekle', function (req, res) {
 
 // Sitemap (SEO)
 app.get('/sitemap.xml', function (req, res) {
-  var iller = require('./data/iller');
-  var base  = 'https://www.724eczane.com';
+  var base  = 'https://www.bankotahminleri.com';
   var today = new Date().toISOString().split('T')[0];
   var urls  = [
     { loc: base + '/',                    priority: '1.0', freq: 'daily'   },
-    { loc: base + '/sitene-ekle',         priority: '0.6', freq: 'monthly' },
-    { loc: base + '/eczane-ekle',         priority: '0.6', freq: 'monthly' },
+    { loc: base + '/program',             priority: '0.9', freq: 'daily'   },
+    { loc: base + '/bulten',              priority: '0.9', freq: 'daily'   },
+    { loc: base + '/agf',                 priority: '0.8', freq: 'daily'   },
+    { loc: base + '/sonuclar',            priority: '0.8', freq: 'daily'   },
+    { loc: base + '/kupon',               priority: '0.7', freq: 'daily'   },
+    { loc: base + '/kupon-hesaplama',     priority: '0.6', freq: 'monthly' },
+    { loc: base + '/veri-bilgisi',        priority: '0.5', freq: 'monthly' },
     { loc: base + '/iletisim',            priority: '0.5', freq: 'monthly' },
     { loc: base + '/gizlilik',            priority: '0.3', freq: 'yearly'  },
     { loc: base + '/kullanim-kosullari',  priority: '0.3', freq: 'yearly'  },
     { loc: base + '/cerez-politikasi',    priority: '0.3', freq: 'yearly'  },
   ];
-  iller.forEach(function (il) {
-    urls.push({ loc: base + '/nobetci-' + il.slug, priority: '0.8', freq: 'daily' });
-    il.districts.forEach(function (d) {
-      urls.push({ loc: base + '/nobetci-' + il.slug + '-' + d.slug, priority: '0.7', freq: 'daily' });
-    });
-  });
   var xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   urls.forEach(function (u) {
     xml += '  <url><loc>' + u.loc + '</loc><changefreq>' + u.freq + '</changefreq><priority>' + u.priority + '</priority><lastmod>' + today + '</lastmod></url>\n';
