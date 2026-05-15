@@ -55,13 +55,7 @@ function rateLimit(max) {
   };
 }
 
-// non-www → www redirect
-app.use(function (req, res, next) {
-  if (req.hostname === 'bankotahminleri.com') {
-    return res.redirect(301, 'https://www.bankotahminleri.com' + req.originalUrl);
-  }
-  next();
-});
+// (www redirect burada yapılmaz — DNS/Render seviyesinde yönetilir)
 
 var NOSY_BASE = 'https://www.nosyapi.com/apiv2/service/';
 var REFRESH_HOURS_TR = [9, 12, 15, 17, 19];
