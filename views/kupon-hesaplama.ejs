@@ -2,6 +2,21 @@
 <html lang="tr">
 <head>
   <%- include('partials/hr-head') %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Ganyan Kupon Bedeli Nasıl Hesaplanır?",
+    "description": "3'lü, 4'lü, 5'li ve 6'lı ganyan kupon bedellerini adım adım hesaplayın.",
+    "url": "https://www.bankotahminleri.com/kupon-hesaplama",
+    "inLanguage": "tr-TR",
+    "step": [
+      { "@type": "HowToStep", "position": 1, "name": "Bahis türünü seçin", "text": "3'lü, 4'lü, 5'li veya 6'lı ganyan sekmesinden bahis türünüzü seçin." },
+      { "@type": "HowToStep", "position": 2, "name": "At sayılarını girin", "text": "Her koşu için seçtiğiniz at sayısını ilgili alanlara girin." },
+      { "@type": "HowToStep", "position": 3, "name": "Hesapla butonuna tıklayın", "text": "Hesapla butonuna tıklayarak toplam kombinasyon sayısını ve kupon bedelini (TL) görün." }
+    ]
+  }
+  </script>
 </head>
 <body>
 
@@ -48,7 +63,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-              <h5 class="fw-bold mb-1">3'lü Ganyan Hesaplama</h5>
+              <h2 class="fw-bold mb-1" style="font-size:1.1rem;">3'lü Ganyan Hesaplama</h2>
               <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
               <div id="ucluForm">
                 <% for(var i=1; i<=3; i++){ %>
@@ -68,7 +83,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
             <div class="card-body p-4">
-              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>3'lü Ganyan Nedir?</h6>
+              <h3 class="fw-bold mb-3" style="color:#1a6b3a; font-size:0.95rem;"><i class="fa-solid fa-circle-info me-2"></i>3'lü Ganyan Nedir?</h3>
               <p style="font-size:0.875rem;" class="text-muted">
                 3'lü ganyan; birbirini takip eden 3 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
               </p>
@@ -93,7 +108,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-              <h5 class="fw-bold mb-1">4'lü Ganyan Hesaplama</h5>
+              <h2 class="fw-bold mb-1" style="font-size:1.1rem;">4'lü Ganyan Hesaplama</h2>
               <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
               <div id="dorluForm">
                 <% for(var i=1; i<=4; i++){ %>
@@ -113,7 +128,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
             <div class="card-body p-4">
-              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>4'lü Ganyan Nedir?</h6>
+              <h3 class="fw-bold mb-3" style="color:#1a6b3a; font-size:0.95rem;"><i class="fa-solid fa-circle-info me-2"></i>4'lü Ganyan Nedir?</h3>
               <p style="font-size:0.875rem;" class="text-muted">
                 4'lü ganyan; birbirini takip eden 4 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
               </p>
@@ -137,7 +152,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-              <h5 class="fw-bold mb-1">5'li Ganyan Hesaplama</h5>
+              <h2 class="fw-bold mb-1" style="font-size:1.1rem;">5'li Ganyan Hesaplama</h2>
               <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
               <div id="besliForm">
                 <% for(var i=1; i<=5; i++){ %>
@@ -157,7 +172,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
             <div class="card-body p-4">
-              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>5'li Ganyan Nedir?</h6>
+              <h3 class="fw-bold mb-3" style="color:#1a6b3a; font-size:0.95rem;"><i class="fa-solid fa-circle-info me-2"></i>5'li Ganyan Nedir?</h3>
               <p style="font-size:0.875rem;" class="text-muted">
                 5'li ganyan; birbirini takip eden 5 koşunun birincisini doğru tahmin ettiğinizde kazandığınız bahis türüdür.
               </p>
@@ -181,7 +196,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-              <h5 class="fw-bold mb-1">6'lı Ganyan Hesaplama</h5>
+              <h2 class="fw-bold mb-1" style="font-size:1.1rem;">6'lı Ganyan Hesaplama</h2>
               <p class="text-muted mb-4" style="font-size:0.875rem;">Her koşu için seçtiğiniz at sayısını girin.</p>
               <div id="altiliForm">
                 <% for(var i=1; i<=6; i++){ %>
@@ -201,7 +216,7 @@
         <div class="col-lg-6">
           <div class="card border-0 shadow-sm h-100" style="background:#f8f9fa;">
             <div class="card-body p-4">
-              <h6 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>6'lı Ganyan Nedir?</h6>
+              <h3 class="fw-bold mb-3" style="color:#1a6b3a; font-size:0.95rem;"><i class="fa-solid fa-circle-info me-2"></i>6'lı Ganyan Nedir?</h3>
               <p style="font-size:0.875rem;" class="text-muted">
                 6'lı ganyan; birbirini takip eden 6 koşunun birincisini doğru tahmin ettiğinizde kazandığınız en büyük ikramiyeli bahis türüdür.
               </p>
@@ -227,7 +242,7 @@
   <!-- Genel Bilgi -->
   <div class="card border-0 shadow-sm mt-5">
     <div class="card-body p-4">
-      <h5 class="fw-bold mb-3" style="color:#1a6b3a;"><i class="fa-solid fa-circle-info me-2"></i>Genel Bilgi</h5>
+      <h2 class="fw-bold mb-3" style="color:#1a6b3a; font-size:1.1rem;"><i class="fa-solid fa-circle-info me-2"></i>Genel Bilgi</h2>
       <div class="row g-3" style="font-size:0.875rem;">
         <div class="col-md-4">
           <div class="d-flex gap-2">

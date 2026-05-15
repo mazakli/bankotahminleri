@@ -2,6 +2,16 @@
 <html lang="tr">
 <head>
   <%- include('partials/hr-head') %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Kupon Yap — bankotahminleri.com",
+    "description": "At yarışı kuponu oluşturun, ganyan ve plase seçin, tahmini kazancınızı görün.",
+    "url": "https://www.bankotahminleri.com/kupon",
+    "inLanguage": "tr-TR"
+  }
+  </script>
 </head>
 <body>
 
@@ -28,7 +38,7 @@
       <!-- Bet type tabs -->
       <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header" style="background:var(--hr-green); color:#fff;">
-          <h5 class="mb-0"><i class="fa-solid fa-list-check me-2"></i>Bahis Türü</h5>
+          <h2 class="mb-0" style="font-size:1rem;"><i class="fa-solid fa-list-check me-2"></i>Bahis Türü</h2>
         </div>
         <div class="card-body pb-2">
           <ul class="nav nav-tabs border-0" id="betTypeTabs" role="tablist">
@@ -100,9 +110,9 @@
       <!-- Bet type info -->
       <div class="card border-0" style="background:#f8f9fa;">
         <div class="card-body">
-          <h6 class="fw-bold mb-2">
+          <h3 class="fw-bold mb-2" style="font-size:0.9rem;">
             <i class="fa-solid fa-circle-info me-2 text-hr-green"></i>Bahis Türü Bilgisi
-          </h6>
+          </h3>
           <div id="betTypeInfo" style="font-size:0.875rem; color:#6c757d;"></div>
         </div>
       </div>
@@ -114,9 +124,9 @@
       <div class="kupon-panel">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
+            <h2 class="mb-0" style="font-size:1rem;">
               <i class="fa-solid fa-ticket me-2"></i>Kuponum
-            </h5>
+            </h2>
             <span class="badge bg-warning text-dark" id="secilenSayiBadge">0 At</span>
           </div>
           <div class="card-body p-0">
@@ -190,9 +200,9 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header" style="background:var(--hr-green); color:#fff;">
-        <h5 class="modal-title">
+        <h2 class="modal-title" style="font-size:1rem;">
           <i class="fa-solid fa-horse me-2"></i>TJK'da Oyna
-        </h5>
+        </h2>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center p-4">

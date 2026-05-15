@@ -2,6 +2,22 @@
 <html lang="tr">
 <head>
   <%- include('partials/hr-head') %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Günlük Yarış Bülteni",
+    "description": "Günlük at yarışı bülteni, jokey ve antrenör bilgileri, AGF verileri.",
+    "url": "https://www.bankotahminleri.com/bulten",
+    "inLanguage": "tr-TR",
+    "about": {
+      "@type": "SportsEvent",
+      "name": "TJK At Yarışı Bülteni",
+      "sport": "At Yarışı",
+      "organizer": { "@type": "Organization", "name": "Türkiye Jokey Kulübü", "url": "https://www.tjk.org" }
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -64,9 +80,9 @@
     <% data.forEach(function(hip, hipIdx) { %>
     <div class="tab-pane fade <%= hipIdx === 0 ? 'show active' : '' %>" id="pane-<%= hip.id %>" role="tabpanel">
 
-      <h4 class="text-hr-green fw-bold mb-4">
+      <h2 class="text-hr-green fw-bold mb-4" style="font-size:1.15rem;">
         <i class="fa-solid fa-horse me-2"></i><%= hip.ad %>
-      </h4>
+      </h2>
 
       <% hip.kosular.forEach(function(kosu) {
         var minAgf = Math.min.apply(null, kosu.atlar.map(function(a){ return a.agf; }));

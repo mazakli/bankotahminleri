@@ -1,5 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#C8102E"/>
-  <rect x="13.5" y="7" width="5" height="18" rx="2" fill="white"/>
-  <rect x="7" y="13.5" width="18" height="5" rx="2" fill="white"/>
+  <rect width="32" height="32" rx="7" fill="#1a6b3a"/>
+  <!-- Horse head profile facing left (muzzle left, neck right-down) -->
+  <path fill="white" d="M10,26 C9,24 7,22 7,19 C7,15 10,12 13,10 C14,8 15,7 15,6 L14,4 L17,3 L19,5 L18,7 C21,10 24,14 23,20 C22,23 20,26 17,27 C14,27 11,26 10,26 Z"/>
+  <!-- Eye -->
+  <circle cx="13" cy="13" r="1.5" fill="#1a6b3a"/>
+  <!-- Nostril -->
+  <circle cx="8" cy="21" r="1" fill="#1a6b3a"/>
 </svg>

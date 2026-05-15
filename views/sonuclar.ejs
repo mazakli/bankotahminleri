@@ -2,6 +2,22 @@
 <html lang="tr">
 <head>
   <%- include('partials/hr-head') %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Yarış Sonuçları",
+    "description": "Günlük at yarışı sonuçları, derece süreleri ve ikramiye ödemeleri.",
+    "url": "https://www.bankotahminleri.com/sonuclar",
+    "inLanguage": "tr-TR",
+    "about": {
+      "@type": "SportsEvent",
+      "name": "TJK At Yarışı Sonuçları",
+      "sport": "At Yarışı",
+      "organizer": { "@type": "Organization", "name": "Türkiye Jokey Kulübü", "url": "https://www.tjk.org" }
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -110,9 +126,9 @@
     <% data.forEach(function(hip, hipIdx) { %>
     <div class="tab-pane fade <%= hipIdx === 0 ? 'show active' : '' %>" id="pane-<%= hip.id %>" role="tabpanel">
 
-      <h4 class="text-hr-green fw-bold mb-4">
+      <h2 class="text-hr-green fw-bold mb-4" style="font-size:1.15rem;">
         <i class="fa-solid fa-horse me-2"></i><%= hip.ad %>
-      </h4>
+      </h2>
 
       <% hip.kosular.forEach(function(kosu, kosuIdx) {
         // Races 5-7 on today's date show as "pending"
@@ -200,9 +216,9 @@
 
         <!-- Payout card -->
         <div class="p-3" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-          <h6 class="fw-bold mb-3">
+          <h3 class="fw-bold mb-3" style="font-size:0.9rem;">
             <i class="fa-solid fa-coins me-2 text-hr-gold"></i>İkramiye Ödemeleri
-          </h6>
+          </h3>
           <div class="row g-3">
             <div class="col-md-8">
               <div class="payout-card p-3">

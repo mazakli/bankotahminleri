@@ -2,6 +2,22 @@
 <html lang="tr">
 <head>
   <%- include('partials/hr-head') %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Günlük Yarış Programı",
+    "description": "Bugünkü TJK at yarışı programı, koşu bilgileri ve at listeleri.",
+    "url": "https://www.bankotahminleri.com/program",
+    "inLanguage": "tr-TR",
+    "about": {
+      "@type": "SportsEvent",
+      "name": "TJK At Yarışı Programı",
+      "sport": "At Yarışı",
+      "organizer": { "@type": "Organization", "name": "Türkiye Jokey Kulübü", "url": "https://www.tjk.org" }
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -65,7 +81,7 @@
 
       <!-- Hippodrome header -->
       <div class="d-flex align-items-center gap-3 mb-3">
-        <h4 class="mb-0 text-hr-green fw-bold"><%= hip.ad %></h4>
+        <h2 class="mb-0 text-hr-green fw-bold" style="font-size:1.15rem;"><%= hip.ad %></h2>
         <span class="badge bg-secondary"><%= hip.kosular.length %> Koşu</span>
       </div>
 
